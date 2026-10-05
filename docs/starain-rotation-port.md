@@ -1,5 +1,10 @@
 # Starain Rotation / MoveFix 逐行核对
 
+以下是首次移植的逐行核对记录。随后用户要求移植 Nova 的 yaw 连续性修复，
+`RotationManager`、`RotationUtils` 已有明确修订，详见 [Nova yaw 修复](nova-yaw-continuity.md)。
+当前校验脚本对另外 5 类继续全文比对，对这 2 类验证已审核修订版的摘要；
+不再将它们标为与 Starain 原始版本完全一致。
+
 参考源码为本项目的 `skid/Starain-1.20.1-main/src/main/java/today/starain/utils/`。
 移植源码位于 `src/dev/myth/utils/`，保留 Starain 的类名、子包、方法、字段、注解、常量、分支、调用顺序和随机计算。
 

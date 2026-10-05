@@ -1,6 +1,7 @@
 package dev.myth.UI.setting;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import java.awt.Color;
@@ -11,7 +12,7 @@ import java.util.function.Consumer;
 
 /** Values consumed by the Mio-style controls. This does not register a feature. */
 public final class Setting<T> {
-    public enum Kind { BOOLEAN, NUMBER, STRING, ENUM, COLOR, SOUND }
+    public enum Kind { BOOLEAN, NUMBER, STRING, ENUM, COLOR, SOUND, SET }
 
     public record State(Object value, boolean expanded, boolean rainbow, boolean sync) {}
 
@@ -22,7 +23,9 @@ public final class Setting<T> {
     private T value;
     private double min;
     private double max;
+    private double step = .1;
     private List<T> choices = List.of();
+    private List<String> entries = List.of();
     private BooleanSupplier visible = () -> true;
     private Consumer<T> changed = ignored -> {};
     private String description = "";
@@ -50,6 +53,7 @@ public final class Setting<T> {
     public static Setting<Integer> integer(String id, String name, int value, int min, int max) {
         var setting = new Setting<>(id, name, Kind.NUMBER, value);
         setting.min = min; setting.max = max;
+        setting.step = 1;
         return setting;
     }
 
@@ -80,10 +84,22 @@ public final class Setting<T> {
         return new Setting<>(id, name, Kind.SOUND, value);
     }
 
+    public static Setting<List<String>> selection(String id, String name, List<String> selected, List<String> entries) {
+        var setting = new Setting<List<String>>(id, name, Kind.SET, List.copyOf(selected));
+        setting.entries = List.copyOf(entries);
+        if (!setting.entries.containsAll(selected)) throw new IllegalArgumentException("Unknown selection");
+        return setting;
+    }
+    public List<String> getEntries() { return entries; }
+
     public Setting<T> visibleWhen(BooleanSupplier visible) { this.visible = visible; return this; }
     public Setting<T> onChange(Consumer<T> changed) { this.changed = changed; return this; }
     public Setting<T> description(String description) { this.description = description; return this; }
     public Setting<T> unit(String unit) { this.unit = unit; return this; }
+    public Setting<T> step(double step) {
+        if (!Double.isFinite(step) || step <= 0) throw new IllegalArgumentException("Invalid number step");
+        this.step = step; return this;
+    }
     public Setting<T> group() { group = true; return this; }
     public Setting<T> action() { action = true; return this; }
     public String getId() { return id; }
@@ -94,6 +110,7 @@ public final class Setting<T> {
     public T get() { return value; }
     public double getMin() { return min; }
     public double getMax() { return max; }
+    public double getStep() { return step; }
     public List<T> getChoices() { return choices; }
     public boolean isVisible() { return visible.getAsBoolean(); }
     public boolean isGroup() { return group; }
@@ -118,6 +135,11 @@ public final class Setting<T> {
 
     @SuppressWarnings("unchecked")
     private T normalize(Object input) {
+        if (kind == Kind.SET) {
+            if (!(input instanceof List<?> list) || list.stream().anyMatch(value -> !(value instanceof String) || !entries.contains(value)))
+                throw new IllegalArgumentException("Unknown selection");
+            return (T) List.copyOf(list.stream().distinct().toList());
+        }
         if (kind == Kind.NUMBER) {
             double number = ((Number) input).doubleValue();
             if (!Double.isFinite(number)) throw new IllegalArgumentException("Non-finite number");
@@ -146,7 +168,11 @@ public final class Setting<T> {
     public JsonElement toJson() {
         JsonObject data = new JsonObject();
         Object stored = action ? defaultValue : value;
-        data.add("value", stored instanceof Boolean b ? new JsonPrimitive(b)
+        if (kind == Kind.SET) {
+            JsonArray selected = new JsonArray();
+            for (Object item : (List<?>) stored) selected.add(item.toString());
+            data.add("value", selected);
+        } else data.add("value", stored instanceof Boolean b ? new JsonPrimitive(b)
                 : stored instanceof Number n ? new JsonPrimitive(n) : new JsonPrimitive(stored.toString()));
         data.addProperty("expanded", expanded);
         if (kind == Kind.COLOR) {
@@ -157,6 +183,14 @@ public final class Setting<T> {
 
     public State decode(JsonElement element) {
         JsonObject data = element.getAsJsonObject();
+        if (kind == Kind.SET) {
+            var selected = new java.util.ArrayList<String>();
+            for (JsonElement item : data.getAsJsonArray("value")) {
+                if (!item.isJsonPrimitive() || !item.getAsJsonPrimitive().isString()) throw new IllegalArgumentException("Expected selection name");
+                selected.add(item.getAsString());
+            }
+            return new State(normalize(selected), flag(data, "expanded", expanded), false, false);
+        }
         JsonPrimitive raw = data.getAsJsonPrimitive("value");
         Object next = switch (kind) {
             case BOOLEAN -> {
@@ -173,6 +207,7 @@ public final class Setting<T> {
                 if (!raw.isString()) throw new IllegalArgumentException("Expected string");
                 yield raw.getAsString();
             }
+            case SET -> throw new IllegalStateException("Selection handled above");
         };
         return new State(action ? defaultValue : normalize(next), flag(data, "expanded", expanded),
                 flag(data, "rainbow", rainbow), flag(data, "sync", sync));

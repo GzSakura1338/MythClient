@@ -18,6 +18,7 @@ public final class ImGuiRenderer implements AutoCloseable {
     private boolean blurEnabled;
     private float blurStrength;
     private int blurFps;
+    private final boolean[] clicked = new boolean[5];
     private final double[] cursorX = new double[1], cursorY = new double[1];
     private boolean initialized;
     private boolean contextCreated;
@@ -60,7 +61,10 @@ public final class ImGuiRenderer implements AutoCloseable {
         if (blurEnabled) blur.draw(draw, x, y, width, height, opacity);
     }
 
-    public void render(Runnable content, float logicalScale, int samples) {
+    /** Edge-triggered clicks, latched once so both passes observe the same frame. */
+    public boolean isMouseClicked(int button) { return button >= 0 && button < clicked.length && clicked[button]; }
+
+    public void render(Runnable below, Runnable above, float logicalScale, int samples) {
         if (!initialized) return;
         boolean nextFocus = GLFW.glfwGetWindowAttrib(window, GLFW.GLFW_FOCUSED) != 0;
         if (focused != nextFocus) { glfw.windowFocusCallback(window, nextFocus); focused = nextFocus; }
@@ -68,8 +72,7 @@ public final class ImGuiRenderer implements AutoCloseable {
         var io = ImGui.getIO();
         float displayX = io.getDisplaySizeX(), displayY = io.getDisplaySizeY();
         float framebufferX = io.getDisplayFramebufferScaleX(), framebufferY = io.getDisplayFramebufferScaleY();
-        if (blurEnabled) blur.prepare(Math.round(displayX * framebufferX), Math.round(displayY * framebufferY),
-                blurStrength * logicalScale * framebufferX, blurFps);
+        int width = Math.round(displayX * framebufferX), height = Math.round(displayY * framebufferY);
         io.setDisplaySize(displayX / logicalScale, displayY / logicalScale);
         io.setDisplayFramebufferScale(framebufferX * logicalScale, framebufferY * logicalScale);
         // IO.MousePos is the previous frame's processed (already scaled) position.
@@ -77,7 +80,17 @@ public final class ImGuiRenderer implements AutoCloseable {
         GLFW.glfwGetCursorPos(window, cursorX, cursorY);
         io.addMousePosEvent(focused ? (float) cursorX[0] / logicalScale : -Float.MAX_VALUE,
                 focused ? (float) cursorY[0] / logicalScale : -Float.MAX_VALUE);
+        if (!blurEnabled) { pass(() -> { below.run(); above.run(); }, width, height, samples, true); return; }
+        // Mio samples the composited backdrop. Flush everything below the blur first, so a
+        // blurred panel frosts the HUD elements under it instead of painting over them.
+        pass(below, width, height, samples, true);
+        blur.prepare(width, height, blurStrength * logicalScale * framebufferX, blurFps);
+        pass(above, width, height, samples, false);
+    }
+
+    private void pass(Runnable content, int width, int height, int samples, boolean latchInput) {
         ImGui.newFrame();
+        if (latchInput) for (int button = 0; button < clicked.length; button++) clicked[button] = ImGui.isMouseClicked(button);
         content.run();
         ImGui.render();
 
@@ -88,7 +101,6 @@ public final class ImGuiRenderer implements AutoCloseable {
         try {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glDisable(GL_FRAMEBUFFER_SRGB);
-            int width = Math.round(displayX * framebufferX), height = Math.round(displayY * framebufferY);
             if (samples > 1) {
                 glEnable(GL_MULTISAMPLE);
                 ensureMsaa(width, height, samples);
@@ -136,6 +148,7 @@ public final class ImGuiRenderer implements AutoCloseable {
     public void scroll(double x, double y) { if (initialized) glfw.scrollCallback(window, x, y); }
     public void clearInput() {
         if (!initialized) return;
+        java.util.Arrays.fill(clicked, false);
         ImGui.getIO().clearInputKeys(); ImGui.getIO().clearInputMouse();
         ImGui.getIO().clearEventsQueue();
         GLFW.glfwSetCursor(window, 0);

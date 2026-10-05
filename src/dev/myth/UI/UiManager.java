@@ -40,7 +40,7 @@ public final class UiManager {
     private final CategoryIcons icons = new CategoryIcons();
     private final ClickGui gui = new ClickGui(this, options, fonts);
     private final ImGuiRenderer renderer = new ImGuiRenderer();
-    private final HudEditor hudEditor = new HudEditor(Myth.HUD_MANAGER, icons);
+    private final HudEditor hudEditor = new HudEditor(Myth.HUD_MANAGER, icons, gui);
     private Keybind openKey;
     private Keybind fontKey;
     private boolean initialized;
@@ -70,8 +70,18 @@ public final class UiManager {
     public void drawBlur(imgui.ImDrawList draw, float x, float y, float width, float height) {
         if (options.blur.get()) renderer.drawBlur(draw, x, y, width, height, opacity());
     }
+    /** HUD backdrops carry their own switch and fade, unlike the UI Blur option. */
+    public void drawHudBlur(imgui.ImDrawList draw, float x, float y, float width, float height, float opacity) {
+        renderer.drawBlur(draw, x, y, width, height, opacity);
+    }
+    public void drawPanelBlur(imgui.ImDrawList draw, float x, float y, float width, float height) {
+        float border = options.line.get() ? 1 : 0;
+        drawBlur(draw, x - border, y - border, width + 2 * border, height + 2 * border);
+    }
     public Keybind getFontKeybind() { return fontKey; }
+    public boolean isMouseClicked(int button) { return renderer.isMouseClicked(button); }
     public String getCommandPrefix() { return options.prefix.get(); }
+    public int getThemeColor() { return options.themeColor(); }
     public boolean isClosing() { return closing; }
     public boolean isOpen() { return Minecraft.getInstance().gui.screen() instanceof ClickGuiScreen; }
     public boolean isHudEditorOpen() { return Minecraft.getInstance().gui.screen() instanceof HudEditorScreen; }
@@ -109,10 +119,10 @@ public final class UiManager {
         if (isEditing()) {
             renderer.key(key.key(), key.scancode(), action, key.modifiers());
             if (action == GLFW.GLFW_PRESS && !closing) {
-                boolean handled = isHudEditorOpen() ? hudEditor.key(key) : gui.key(key);
+                boolean handled = gui.key(key) || (isHudEditorOpen() && hudEditor.key(key));
                 if (!handled && (key.isEscape() || openKey.getMapping().matches(key))) requestClose();
             } else if (action == GLFW.GLFW_REPEAT && !closing) {
-                if (isHudEditorOpen()) hudEditor.key(key); else gui.keyRepeat(key);
+                gui.keyRepeat(key);
             }
             return true;
         }
@@ -143,7 +153,7 @@ public final class UiManager {
                 && action == GLFW.GLFW_PRESS) { requestClose(); return true; }
         renderer.button(button, action, mods); return true;
     }
-    public void character(int codepoint) { if (isOpen()) { gui.character(codepoint); renderer.character(codepoint); } }
+    public void character(int codepoint) { if (isEditing()) { gui.character(codepoint); renderer.character(codepoint); } }
     public void scroll(double x, double y) {
         if (closing) return;
         renderer.scroll(x, y); if (isHudEditorOpen()) hudEditor.scroll(y); else gui.scroll(y);
@@ -168,7 +178,7 @@ public final class UiManager {
             if (!com.mojang.blaze3d.systems.RenderSystem.getDevice().getDeviceInfo().backendName().equals("OpenGL"))
                 throw new IllegalStateException("HUD editor requires the OpenGL graphics backend");
             if (!renderer.initialize(client.getWindow().handle())) return;
-            fonts.prepare(); renderer.clearInput(); renderer.invalidateBlur(); hudEditor.resetInput();
+            fonts.prepare(); renderer.clearInput(); renderer.invalidateBlur(); hudEditor.resetInput(); gui.opened();
             KeyMapping.releaseAll();
             client.gui.setScreen(new HudEditorScreen(this, client.gui.screen()));
             closing = false; transition = System.currentTimeMillis(); failure = null;
@@ -184,20 +194,35 @@ public final class UiManager {
         if (initialized && fontKey.canUpdateHeldState(fonts.isEnabled(), client.gui.screen() != null))
             fonts.setEnabled(fontKey.getMode().heldState(fontKey.isPressed()));
         Myth.HUD_MANAGER.updateHeldKeybind();
-        if ((!isEditing() && !Myth.HUD_MANAGER.shouldRender(client)) || client.gui.overlay() != null || failure != null) return;
+        boolean worldEsp = client.level != null && !client.gui.hud.isHidden() && Myth.WORLD_ESP.hasContent();
+        if ((!isEditing() && !worldEsp && !Myth.HUD_MANAGER.shouldRender(client))
+                || client.gui.overlay() != null || failure != null) return;
         try {
             if (!renderer.initialize(client.getWindow().handle())) return;
             // Mio forces base GUI scale 2 independently of Minecraft's selected GUI scale.
             float physicalScale = client.getWindow().calculateScale(2, client.isEnforceUnicode()) * options.guiScale.get();
-            renderer.configureBlur(isEditing() && options.blur.get(), options.blurStrength.get(), options.blurFps.get());
+            renderer.configureBlur((isEditing() && options.blur.get()) || Myth.HUD_MANAGER.wantsBlur(),
+                    options.blurStrength.get(), options.blurFps.get());
             renderer.render(() -> {
                 fonts.prepare();
-                if (isOpen()) gui.render();
-                else if (isHudEditorOpen()) hudEditor.render(options, fonts, opacity(), !closing);
-                else {
+                // World boxes sit under the HUD, so a blurred panel frosts them like anything else.
+                if (client.level != null && !client.gui.hud.isHidden())
+                    Myth.WORLD_ESP.render(imgui.ImGui.getBackgroundDrawList(),
+                            imgui.ImGui.getIO().getDisplaySizeX(), imgui.ImGui.getIO().getDisplaySizeY(), 1);
+                if (isHudEditorOpen()) hudEditor.renderBelow(options, fonts, opacity(), !closing);
+                else if (!isOpen() || Myth.HUD_MANAGER.shouldRender(client)) {
                     float width = imgui.ImGui.getIO().getDisplaySizeX(), height = imgui.ImGui.getIO().getDisplaySizeY();
                     Myth.HUD_MANAGER.layout(fonts, width, height);
-                    Myth.HUD_MANAGER.render(fonts, width, height, 1, false);
+                    Myth.HUD_MANAGER.render(fonts, width, height, 1, false, false);
+                }
+            }, () -> {
+                if (isHudEditorOpen()) hudEditor.renderAbove(options, fonts, opacity(), !closing);
+                else {
+                    if (!isOpen() || Myth.HUD_MANAGER.shouldRender(client)) {
+                        float width = imgui.ImGui.getIO().getDisplaySizeX(), height = imgui.ImGui.getIO().getDisplaySizeY();
+                        Myth.HUD_MANAGER.render(fonts, width, height, 1, false, true);
+                    }
+                    if (isOpen()) gui.render();
                 }
             }, physicalScale, options.samples());
         } catch (RuntimeException | LinkageError exception) {
@@ -317,5 +342,6 @@ public final class UiManager {
         openKey.setKey(state.openKey()); openKey.setMode(state.openMode());
         fontKey.setKey(state.fontKey()); fontKey.setMode(state.fontMode()); persisted = source.deepCopy();
     }
-    public void stop() { icons.close(); fonts.close(); renderer.close(); }
+    public void stop() { Myth.HUD_MANAGER.close(); icons.close(); fonts.close(); renderer.close(); }
+    public float getHudScale() { return options.guiScale.get(); }
 }

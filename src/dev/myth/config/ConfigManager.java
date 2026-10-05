@@ -70,6 +70,10 @@ public final class ConfigManager {
     }
 
     public synchronized void saveConfig(String name) throws IOException {
+        // Screen.removed() can request another save after shutdown disables models.
+        if (stopping) {
+            return;
+        }
         Config target = new Config(directory, name);
         JsonObject next = capture();
         target.save(next);
@@ -86,6 +90,9 @@ public final class ConfigManager {
     }
 
     public synchronized void loadConfig(String name) throws IOException {
+        if (stopping) {
+            return;
+        }
         Config target = new Config(directory, name);
         JsonObject root = target.load();
         JsonObject modules = root.getAsJsonObject("modules");
@@ -135,7 +142,7 @@ public final class ConfigManager {
             for (PendingState state : states) {
                 state.binding().setKey(state.key());
                 state.binding().setMode(state.mode());
-                state.model().setEnabled(state.enabled());
+                state.model().setEnabled(state.enabled(), false);
             }
         } catch (RuntimeException exception) {
             try { Myth.UI_MANAGER.apply(previousUiState, previousUi); }
@@ -150,7 +157,7 @@ public final class ConfigManager {
                 try {
                     state.binding().setKey(Keybind.parseSavedKey(state.previousKey()));
                     state.binding().setMode(state.previousMode());
-                    state.model().setEnabled(state.previousEnabled());
+                    state.model().setEnabled(state.previousEnabled(), false);
                 } catch (RuntimeException rollbackFailure) {
                     exception.addSuppressed(rollbackFailure);
                 }
@@ -204,28 +211,38 @@ public final class ConfigManager {
     }
 
     public synchronized void stop() {
+        if (stopping) {
+            return;
+        }
+        stopping = true;
         if (ready) {
             try {
-                saveConfig();
-            } catch (IOException exception) {
+                // Freeze live values before model/resource cleanup. Retain this
+                // snapshot even if disk I/O fails, so the shutdown hook can retry.
+                snapshot = capture();
+                writeSnapshot();
+            } catch (IOException | RuntimeException exception) {
                 Myth.LOGGER.error("Could not save Myth config on stop", exception);
             }
         }
-        stopping = true;
     }
 
     private synchronized void saveSnapshot() {
         // Never read game objects on the JVM shutdown thread or save post-disable state.
-        if (!ready || stopping || snapshot == null) {
+        if (!ready || snapshot == null) {
             return;
         }
         try {
-            new Config(directory, currentConfig).save(snapshot);
-            if (!currentConfig.equals("latest")) {
-                new Config(directory, "latest").save(snapshot);
-            }
-        } catch (IOException exception) {
+            writeSnapshot();
+        } catch (IOException | RuntimeException exception) {
             Myth.LOGGER.error("Could not save cached Myth config", exception);
+        }
+    }
+
+    private void writeSnapshot() throws IOException {
+        new Config(directory, currentConfig).save(snapshot);
+        if (!currentConfig.equals("latest")) {
+            new Config(directory, "latest").save(snapshot);
         }
     }
 

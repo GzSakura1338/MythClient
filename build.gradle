@@ -9,6 +9,23 @@ base {
     archivesName = project.archives_base_name
 }
 
+repositories {
+    maven {
+        name = 'DevAuth'
+        url = 'https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1'
+        content { includeGroup 'me.djtheredstoner' }
+    }
+}
+
+loom {
+    runs {
+        client {
+            property 'devauth.enabled', 'true'
+            property 'devauth.account', 'main'
+        }
+    }
+}
+
 // All Java sources share one directory.
 sourceSets {
     main {
@@ -28,6 +45,7 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    localRuntime "me.djtheredstoner:DevAuth-fabric:${project.devauth_version}"
 
     compileOnly 'org.projectlombok:lombok:1.18.46'
     annotationProcessor 'org.projectlombok:lombok:1.18.46'

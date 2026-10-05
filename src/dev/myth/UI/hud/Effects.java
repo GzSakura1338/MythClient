@@ -1,0 +1,32 @@
+package dev.myth.UI.hud;
+
+import dev.myth.UI.font.FontManager;
+import dev.myth.UI.setting.Setting;
+import java.util.Comparator;
+import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.effect.MobEffectUtil;
+
+public final class Effects extends LinesHudElement {
+    public final Setting<Boolean> vanilla = addSetting(Setting.bool("vanilla", "Vanilla", false));
+    public final Setting<String> selection = addSetting(Setting.choice("selection", "Selection", "Any", HudSelection.MODES));
+    public final Setting<List<String>> whiteList = addSetting(HudSelection.registry("whiteList", "WhiteList", BuiltInRegistries.MOB_EFFECT));
+    public Effects() { super("effects", "Effects", true); }
+    @Override public String getDescription() { return "Lists active potion effects and their remaining duration."; }
+    @Override protected List<Line> getLines(FontManager fonts) {
+        var client = Minecraft.getInstance();
+        if (client.player == null) return List.of();
+        return client.player.getActiveEffects().stream().filter(effect -> HudSelection.allows(selection.get(),
+                BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect().value()).toString(), whiteList.get()))
+                .sorted(Comparator.comparing(effect -> effect.getEffect().value().getDisplayName().getString()))
+                .map(effect -> {
+                    String id = BuiltInRegistries.MOB_EFFECT.getKey(effect.getEffect().value()).toString();
+                    String duration = MobEffectUtil.formatDuration(effect, 1, client.level.tickRateManager().tickrate()).getString();
+                    if (duration.startsWith("0")) duration = duration.substring(1);
+                    String text = effect.getEffect().value().getDisplayName().getString() + " "
+                            + (effect.getAmplifier() == 0 ? "" : (effect.getAmplifier() + 1) + " ") + "\u00a7f" + duration;
+                    return new Line(id, text, vanilla.get() ? 0xff000000 | effect.getEffect().value().getColor() : null);
+                }).toList();
+    }
+}

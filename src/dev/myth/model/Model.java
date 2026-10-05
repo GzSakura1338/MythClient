@@ -1,6 +1,7 @@
 package dev.myth.model;
 
 import dev.myth.utils.Keybind;
+import dev.myth.command.Notifications;
 import dev.myth.Myth;
 import java.util.Objects;
 import java.util.ArrayList;
@@ -49,6 +50,13 @@ public abstract class Model {
     }
 
     public final String getDescription() { return description; }
+    /** Mio excludes utility modules from its HUD list and allows an info suffix. */
+    public boolean isDrawn() { return true; }
+    public String getInfo() { return null; }
+    public final String getInfoString() {
+        String info = getInfo();
+        return getName() + (info == null ? "" : " §7[§f" + info + "§7]");
+    }
     protected final void setDescription(String description) { this.description = Objects.requireNonNull(description); }
     public final List<Setting<?>> getSettings() { return List.copyOf(settings); }
     protected final <T> Setting<T> addSetting(Setting<T> setting) {
@@ -66,6 +74,11 @@ public abstract class Model {
     }
 
     public final void setEnabled(boolean enabled) {
+        setEnabled(enabled, true);
+    }
+
+    /** Config restoration and shutdown can change state without chat notifications. */
+    public final void setEnabled(boolean enabled, boolean notify) {
         if (this.enabled == enabled) {
             return;
         }
@@ -84,6 +97,7 @@ public abstract class Model {
             Myth.EVENT_MANAGER.unregister(this);
             throw exception;
         }
+        if (notify && this.enabled == enabled) Notifications.onToggle(this);
     }
 
     protected boolean requiresWorld() {

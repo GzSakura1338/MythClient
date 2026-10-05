@@ -98,7 +98,9 @@ final class FontAtlas implements AutoCloseable {
     float textBottom(String text) { return textEdge(text, false); }
     private float textEdge(String text, boolean top) {
         float edge = top ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY;
-        for (char c : text.toCharArray()) {
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == 167 && i + 1 < text.length()) { i++; continue; }
             Glyph glyph = glyphs.getOrDefault(c, glyphs.get('?'));
             if (glyph.textBottom() == 0) continue;
             edge = top ? Math.min(edge, glyph.textTop()) : Math.max(edge, glyph.textBottom());
@@ -107,19 +109,36 @@ final class FontAtlas implements AutoCloseable {
     }
     float width(String text) {
         float width = 0;
-        for (char c : text.toCharArray()) { Glyph glyph = glyphs.getOrDefault(c, glyphs.get('?')); width += glyph.advance(); }
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == 167 && i + 1 < text.length()) { i++; continue; }
+            Glyph glyph = glyphs.getOrDefault(c, glyphs.get('?')); width += glyph.advance();
+        }
         return width;
     }
 
     void draw(ImDrawList draw, String text, float x, float y, int argb, float opacity, float scale) {
-        int color = (Math.clamp(Math.round((argb >>> 24) * opacity), 0, 255) << 24)
-                | ((argb & 0xff) << 16) | (argb & 0xff00) | ((argb >> 16) & 0xff);
-        for (char c : text.toCharArray()) {
+        draw(draw, text, x, y, argb, opacity, scale, false);
+    }
+    void draw(ImDrawList draw, String text, float x, float y, int argb, float opacity, float scale, boolean shadow) {
+        int color = packed(argb, opacity);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == 167 && i + 1 < text.length()) {
+                int index = "0123456789abcdefklmnor".indexOf(Character.toLowerCase(text.charAt(++i)));
+                color = index < 16 ? packed((argb & 0xff000000) | AdvanceGlyph.intArr[(index < 0 ? 15 : index) + (shadow ? 16 : 0)], opacity)
+                        : packed(argb, opacity);
+                continue;
+            }
             Glyph glyph = glyphs.getOrDefault(c, glyphs.get('?'));
             if (c != ' ') draw.addImage(texture, x, y, x + glyph.width() * scale, y + glyph.height() * scale,
                     glyph.u(), glyph.v(), glyph.u2(), glyph.v2(), color);
             x += glyph.advance() * scale;
         }
+    }
+    private static int packed(int argb, float opacity) {
+        return (Math.clamp(Math.round((argb >>> 24) * opacity), 0, 255) << 24)
+                | ((argb & 0xff) << 16) | (argb & 0xff00) | ((argb >> 16) & 0xff);
     }
 
     @Override public void close() { if (texture != 0) glDeleteTextures(texture); texture = 0; }

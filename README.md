@@ -13,13 +13,13 @@ src/
 │   ├── event/           # api、注解、23 个事件和渲染事件桥接
 │   ├── command/         # 聊天命令、别名和补全
 │   ├── config/          # JSON 配置保存与加载
-│   ├── UI/              # Mio ClickGUI、ImGui 后端、字体库与 HUD 空壳
-│   │   └── hud/         # HUD 注册表、布局与空编辑器
+│   ├── UI/              # Mio ClickGUI、ImGui 后端、字体库与 HUD
+│   │   └── hud/         # HUD 注册表、布局、编辑器与 ModuleList
 │   ├── mixin/           # 26.2 的事件触发钩子
 │   └── model/           # Model、ModelManager、Category
-│       ├── combat/
+│       ├── combat/      # KillAura
 │       ├── misc/
-│       ├── player/      # Sprint
+│       ├── player/      # Sprint、Scaffold
 │       ├── render/      # FullBright
 │       └── client/
 └── resources/
@@ -36,12 +36,36 @@ src/
 
 构建产物位于 `build/libs/myth-1.0.0.jar`。
 Minecraft 26.2 使用官方未混淆名称，因此不需要额外配置 Yarn mappings。
+DevAuth 1.2.2 使用 `localRuntime` 加载，仅用于开发运行，不打入发布 JAR。
+`runClient` 已设置 `devauth.enabled=true` 和 `devauth.account=main`，选择配置中的 `[accounts.main]`；
+首次登录按控制台给出的微软授权链接操作，
+配置默认位于 Windows 用户目录的 `.devauth/config.toml`。
 
 ## 基础框架
 
 `Myth.MODEL_MANAGER` 管理功能的注册、分类查询、启停、按键切换和客户端 tick。
-当前只注册 Sprint（Player）和 FullBright（Render），默认关闭、默认未绑定。
+当前注册 KillAura / AutoCrystal（Combat）、FakePlayer（Misc）、Sprint / Scaffold（Player）、FullBright（Render）和 Notifications（Client），均默认未绑定。
+原版选项页面的 FOV 滑条沿用 Mio 的上限 150（原版为 110），最小值 30、默认值 70；数值保存在原版 `options.txt`。
+KillAura、Sprint、Scaffold 和 FullBright 默认关闭；Notifications 默认开启，代码位于 `command/Notifications.java`。
+KillAura 的 CPS Mode → 1.9+ 接入 Nova 等待暴击：开启 Wait Critical，右键展开 Interrupt Sprint 和 Critical Sound；三个选项默认关闭。
+Notifications 的 Modules 控制聊天栏开关通知：开启显示绿色 `[+] Module`，关闭显示红色 `[-] Module`，
+括号沿用 Mio 的较深颜色。GUI、按键和 toggle 命令共用通知入口；重复设置相同状态不会重复通知，
+加载配置、回滚和退出时静默恢复状态。通知模块及 Modules 设置随既有配置保存。
 Sprint 沿用 Starain 的 PRE Motion 最高优先级监听：持续按住原版冲刺键并关闭 ToggleSprint，关闭模块时释放冲刺键。
+Scaffold 沿用 Starain 的 Normal / Snap / Telly、SafeWalk、Rise / Heypixel 转头和 Normal / Strict 射线判断，自动选择热栏方块，关闭时恢复槽位；按要求不包含 ESP、卡空跳帧和秒放方块自救。
+源码适配和验证见 [Scaffold 移植记录](docs/starain-scaffold-port.md)。Scaffold 开启时暂停 KillAura。
+FakePlayer 沿用 Mio `.fakeplayer` 的客户端副本：开启在本地玩家位置生成一个复制背包的假人，
+弹图腾不死、每 80 tick 补药水与 16 点吸收、副手常驻图腾；Name 改名即重新生成，
+Record / Play 录制并循环回放自己的移动。打它会在本地结算伤害，攻击包不会发给服务器。
+源码适配和未移植项见 [FakePlayer 移植记录](docs/mio-fakeplayer-port.md)。
+AutoCrystal 沿用 Mio 的爆炸伤害模型（`utils/CrystalDamage.java`）选放置点和要打的水晶，
+先破后放，Place / Break 两组分别有延迟、通透与隔墙距离、伤害下限和自伤上限；
+AntiSuicide、FacePlace、AutoSwap / SwapBack 沿用 Mio 行为。Mio 反编译源码里爆炸暴露率
+是整数除法导致恒不放置，本移植改用原版 `ServerExplosion.getSeenPercent`。
+BasePlace 会把「能垫黑曜石的位置」一并计分，选中后先垫底座，下一次再放水晶，
+StrictDirection / Air 沿用 Mio 的可见面与 airplace 判定。
+Render 用 ImGui 画渐隐盒子（`UI/WorldEsp.java`，投影取当帧相机矩阵），只在放置时高亮。
+静默换手等未移植项见 [AutoCrystal 移植记录](docs/mio-autocrystal-port.md)。
 FullBright 保留 Gamma/NightVision 模式，Gamma 的 Brightness 为 1～15、默认 15，每个玩家 tick 增加 0.1。
 26.2 通过 `LightmapRenderStateExtractor` 替换光照的 Gamma 读取，不修改游戏保存的亮度选项；关闭后恢复原版光照。
 NightVision 每 tick 添加 1337 tick 的客户端夜视，切回 Gamma 或关闭模块时移除，与 Starain 一致。
@@ -65,8 +89,8 @@ Hold/ReverseHold 在每个渲染帧直接读取 GLFW 键鼠状态，长按不会
 跳跃、射线、物品使用、运动包及模型旋转，PRE Motion 后重置本 tick 的目标和平滑状态。
 
 保留源代码的 Lombok 注解，使用相同的 1.18.46 版本，仅参与编译。
-逐行对照记录见 [Starain 移植核对](docs/starain-rotation-port.md)，运行
-`.\scripts\verify-starain-rotation.ps1` 可重新校验全部 7 个工具类、887 行源码。
+逐行对照记录见 [Starain 移植核对](docs/starain-rotation-port.md)，转头连续性修复见 [Nova yaw 修复](docs/nova-yaw-continuity.md)。
+`.\scripts\verify-starain-rotation.ps1` 校验 5 个仍保持原样的工具类，以及 2 个已核对的 Nova 修订版。
 
 ## 事件系统
 
@@ -137,14 +161,15 @@ Hold/ReverseHold 在每个渲染帧直接读取 GLFW 键鼠状态，长按不会
 扩展命令继承 `Command`，调用 `Myth.COMMAND_MANAGER.register(...)`。
 
 配置存放在当前游戏目录的 `config/myth/<名称>.json`，启动默认加载 `latest.json`。
-先注册模块并初始化按键，再加载配置；添加模块应在 `MODEL_MANAGER.initialize()` 之前注册。
+先注册模块并初始化按键，在原版 Options 加载完成后恢复配置，避免 `options.txt` 覆盖配置中的绑定；添加模块应在 `MODEL_MANAGER.initialize()` 之前注册。
 配置保存已注册模块的 `enabled` 和键鼠绑定字符串，保留未识别模块和扩展字段。
 命名配置保存时同步 `latest`；加载命名配置时也更新 `latest`，供下次启动恢复。
 配置缺失或格式错误会报告失败，加载失败不会创建同名文件；启动时损坏的 `latest`
 不会被自动保存覆盖。写入采用 UTF-8 和临时文件替换。
 
 每 100 个客户端 tick 检查状态变更并自动保存，覆盖按键切换及游戏控制设置中的改键。
-正常退出时先保存再关闭模块；JVM 关闭钩子只保存最近的配置快照，避免在退出线程读取游戏对象。
+退出请求时立即保存并冻结当前参数，再关闭模块；GUI 的关闭回调不会覆盖退出前的启用状态。
+重复退出回调不会重新采集参数；JVM 关闭钩子写入冻结快照，也可重试退出时失败的写入，避免在退出线程读取游戏对象。
 非正常终止可能丢失最后一个自动保存间隔内的变更。
 
 ## ImGui ClickGUI
@@ -174,15 +199,24 @@ Hold/ReverseHold 在每个渲染帧直接读取 GLFW 键鼠状态，长按不会
   FPS 只限制模糊背景刷新，控件和文字仍每帧绘制；改变强度、开关、窗口尺寸会立即刷新。
   沿用 Mio 的局部范围：分类面板、音效分类和提示框后面的背景，HUD 编辑器只模糊其分类面板。
   面板折叠、移动和缩放时范围同步变化。全屏紫色 Tint 和 Gradient 铺底已移除。
+  Strength 与 FPS 同时作用于 HUD 的模糊背景：缓存纹理只有一份，但 HUD 有独立开关，
+  `HudElement.wantsBlur()` 为真的组件会让模糊在普通游戏画面里也准备，不受本开关影响。
+  开启模糊时一帧分两遍提交：先画不要模糊的 HUD，再取样后台缓冲，最后画模糊组件、HUD 编辑器
+  面板和 ClickGUI，所以压在它们下面的 HUD 会被一起模糊而不是被盖住。
+  两遍之间 `ImGui.isMouseClicked` 只在第一遍成立，点击沿由 `Myth.UI_MANAGER.isMouseClicked(button)` 锁存提供。
 
 Client 中的 **UI**、**Fonts**、**HUD** 行是界面自身的设置，未向 `ModelManager` 注册功能模块。
 字体库 `UI/font/FontHelper.java`、`AdvanceGlyph.java` 来自 Mio，保留 AWT 字形生成、
 字符宽度、格式颜色、半尺寸绘制与阴影规则，纹理提交适配 ImGui。
-Fonts 默认关闭时使用 Minecraft bitmap；开启后使用 Mio 默认 Verdana 16，
+Fonts 默认开启，使用 Verdana 17 并开启 AntiAlias；关闭时使用 Minecraft bitmap，
 支持 Font、Style、AntiAlias、Size、Shift、Shadow、Translate。
-标题与选项按字形的可见高度和阴影统一垂直居中；Shift 可手动调整自定义字体的位置。
-原版字形增加透明间隔并使用整数坐标，避免悬停动画采样到相邻字符而闪出白线。
-Line 使用 Mio 的四条平面填充边框，悬停音效仅在进入控件时播放，点击每次按下触发一次。
+标题与选项按亮色字形本体的可见高度垂直居中，阴影不参与居中范围；Shift 可手动调整自定义字体的位置。
+原版字形增加透明间隔，垂直坐标按实际屏幕像素对齐，保留居中计算产生的半个 GUI 单位，
+避免文字向上偏移及悬停动画采样到相邻字符而闪出白线。
+Line 使用 Mio 的四条平面填充边框；右键展开 Elements → Line → Color 可独立设置颜色、透明度、Rainbow 和 Sync，
+默认关闭 Sync，可直接自定义；开启 Sync 跟随 UI 主题。分类、枚举展开、音效和 HUD 编辑器面板共用该边框颜色，随配置保存。
+外侧边框先绘制与面板相同的 BgColor，模糊也覆盖边框；Line 与 Color 设置相同 RGBA 时使用相同的颜色叠加方式。
+悬停音效仅在进入控件时播放，点击每次按下触发一次。
 Verdana 由系统字体提供；Mio 本身未附带 TTF。16 个 OGG 音效直接来自 openmio 资源。
 
 布局、面板叠放顺序、展开状态、UI 选项、字体和绑定写入既有配置的 `ui` 字段；
@@ -190,7 +224,7 @@ Verdana 由系统字体提供；Mio 本身未附带 TTF。16 个 OGG 音效直�
 新增参数可通过 `Model.addSetting(...)` 添加 `UI.setting.Setting`，
 不需要修改 GUI。界面资源没有语言 JSON。
 
-## HUD 框架与空编辑器
+## HUD 框架与组件
 
 右键展开 **Client → HUD**，左键点击 **HudEditor** 进入编辑器，Esc 返回原界面。
 对照 openmio 的 `HUDSearchHelper4`、`ModuleListMode`、`SearchHelper4_10` 和
@@ -202,4 +236,30 @@ Verdana 由系统字体提供；Mio 本身未附带 TTF。16 个 OGG 音效直�
 提供尺寸、启停、参数与归一化位置。框架包含组件拖动、中心吸附、边角锚定、方向键微调、
 I 互换左右分组和 Delete/Backspace 禁用逻辑。状态写入配置的 `hud` 字段，旧配置仍可加载。
 
-当前没有具体 HUD 组件或默认注册项，编辑器的 HUD 列表为空，普通游戏画面不增加任何 HUD 绘制。
+HUD 编辑器现在列出 **ModuleList**（Mio 的 ArrayList），默认关闭、锚定右上角。
+左键开关，右键展开 OnlyBound 和 Sort（Length / Alphabet）；仅显示启用且允许显示的功能模块，
+Notifications、UI、Fonts、HUD 和 ModuleList 自身不入榜。OnlyBound 仅保留已绑定键鼠的模块。
+支持 Mio 的四次方滑入/滑出、渐隐、动态行高，以及左右对齐、上下排列、中心对齐和自由拖动。
+`Model.getInfo()` 可提供灰色括号内的状态后缀；原版和自定义字体均支持后缀格式与宽度计算。
+正常 HUD 使用纯文字，不增加列表背景或侧边线；编辑器的选中框、拖动、吸附和配置沿用 HUD 框架。
+
+Client → HUD 中增加 SmoothWidth 和 Colors，采用 Mio 的默认颜色 `#BD99FF`、
+None / Pulse / Raw、FadeOffset、SecondColor、ColorAmount（2～9）、FadeSpeed、MixColors 与彩色序列。
+颜色支持 Rainbow / Sync；模块列表参数、HUD 配色及锚点和位置均写入现有配置。
+移植参考 `module/ModuleList`、`ModuleListCryptoHelper`、`CryptoHelper`、`ModuleListSearchHelper4_2`、
+`HUDHelper_2`、`module/client/HUD`、`MixinTitleScreenMode`，渲染提交适配现有 ImGui 后端。
+
+HUD 编辑器同时提供 Mio 的 **Watermark** 与 **Welcomer**：Watermark 默认开启、锚定左上角，
+Text 默认 `Myth`，显示本项目实际版本；VersionColor 默认开启，让版本部分显示白色，关闭后跟随 HUD 配色。
+Welcomer 默认关闭、居于屏幕中心的自由位置；Mode 支持 Name / UID / Custom，Name 显示
+`Hello 玩家名 :')`，Custom 的 Text 默认 `Welcome to Myth.`。本项目没有 Mio 账号系统，UID 保留
+openmio `WelcomerHelper` 未初始化时的 `-1`，不生成账号或伪造 UID。
+两者复用 Mio 文字滑入、SmoothWidth、HUD 配色、原版/自定义字体、拖动锚点和现有配置保存。
+
+**Map** 只有一块模糊背景和中心的玩家圆点，不采集世界数据、不画区块或 ESP。
+Width（50～500）、Height（50～250）与 Size 决定面板大小，Background 为叠在模糊上的面板底色，
+Outline 是面板外侧的一像素边框。Blur 默认开启，复用 ClickGUI 的 `GaussianBlur` 缓存和
+Client → UI → Blur 的 Strength / FPS，但有独立开关：它为真时模糊在普通游戏画面里也会准备，
+不要求界面打开或 UI 的 Blur 开启。Dot 默认红色 `#FFFF0000`，支持 Rainbow / Sync，
+Radius 为 0.5～8 并随 Size 缩放，超出面板的部分按面板裁剪。
+HUD 允许自由叠加：Map 压在别的 HUD 上时会把它们模糊进自己的背景，而不是盖掉。

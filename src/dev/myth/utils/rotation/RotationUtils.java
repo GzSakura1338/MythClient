@@ -119,7 +119,11 @@ public class RotationUtils implements Wrapper {
     }
 
     public static Rotation applySensitivityPatch(final Rotation rotation, final Rotation previousRotation) {
-        final float mouseSensitivity = (float) (mc.options.sensitivity().get() * (1 + Math.random() / 10000000) * 0.6F + 0.2F);
+        return applySensitivityPatch(rotation, previousRotation, true);
+    }
+
+    public static Rotation applySensitivityPatch(final Rotation rotation, final Rotation previousRotation, final boolean randomize) {
+        final float mouseSensitivity = (float) (mc.options.sensitivity().get() * (1 + (randomize ? Math.random() / 10000000 : 0)) * 0.6F + 0.2F);
         final double multiplier = mouseSensitivity * mouseSensitivity * mouseSensitivity * 8.0F * 0.15D;
         final float yaw = previousRotation.getYaw() + (float) (Math.round((rotation.getYaw() - previousRotation.getYaw()) / multiplier) * multiplier);
         final float pitch = previousRotation.getPitch() + (float) (Math.round((rotation.getPitch() - previousRotation.getPitch()) / multiplier) * multiplier);
@@ -130,7 +134,12 @@ public class RotationUtils implements Wrapper {
         float prevYaw = mc.player.yRotO;
         float prevPitch = mc.player.xRotO;
         final Rotation previousRotation = new Rotation(prevYaw, prevPitch);
-        final float yaw = previousRotation.getYaw() + Mth.wrapDegrees(rotation.getYaw() - previousRotation.getYaw());
+        return relateToPlayerRotation(rotation, previousRotation);
+    }
+
+    public static Rotation relateToPlayerRotation(final Rotation rotation, final Rotation previousRotation) {
+        // Nova: preserve the published yaw's revolution, including instant turns.
+        final float yaw = (float) (previousRotation.getYaw() + Mth.wrapDegrees((double) rotation.getYaw() - previousRotation.getYaw()));
         final float pitch = Mth.clamp(rotation.getPitch(), -90, 90);
         return new Rotation(yaw, pitch);
     }
@@ -156,6 +165,7 @@ public class RotationUtils implements Wrapper {
             final double deltaPitch = (targetRotation.getPitch() - lastRotation.getPitch());
 
             final double distance = Math.sqrt(deltaYaw * deltaYaw + deltaPitch * deltaPitch);
+            if (distance == 0) return new Rotation(0, 0);
             final double distributionYaw = Math.abs(deltaYaw / distance);
             final double distributionPitch = Math.abs(deltaPitch / distance);
 
@@ -176,13 +186,13 @@ public class RotationUtils implements Wrapper {
     }
 
     public static Rotation smooth(final Rotation lastRotation, final Rotation targetRotation, final double speed) {
-        float yaw = targetRotation.getYaw();
+        float yaw = relateToPlayerRotation(targetRotation, lastRotation).getYaw();
         float pitch = targetRotation.getPitch();
         final float lastYaw = lastRotation.getYaw();
         final float lastPitch = lastRotation.getPitch();
 
         if (speed != 0) {
-            Rotation move = move(targetRotation, speed);
+            Rotation move = move(lastRotation, targetRotation, speed);
 
             yaw = lastYaw + move.getYaw();
             pitch = lastPitch + move.getPitch();

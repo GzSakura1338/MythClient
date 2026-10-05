@@ -13,8 +13,8 @@ $sourceFiles = @(
     'vector/Vector2f.java'
 )
 
-# These are the complete allowed changes, apart from the package/import prefix.
-# Any other changed statement, comment, annotation or line makes this check fail.
+# Exact Starain parity remains enforced for the five unchanged utility classes.
+# The two Nova continuity revisions below are pinned separately; see docs/nova-yaw-continuity.md.
 $allowedChanges = @{
     'rotation/RotationManager.java' = @(
         @('import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket.PosRot;',
@@ -39,10 +39,34 @@ $allowedChanges = @{
     )
 }
 
+$novaContinuityRevisions = @{
+    'rotation/RotationManager.java' = @{
+        Reference = 'D76EA170584AB7F74918D817B5524D642E15FFE076CED7F2834349285F5DC84E'
+        Revision = '789838CFFE4B284B4EDF356CF3AB011934DD4C8768B889ED5D099A4AD9BE80C0'
+    }
+    'rotation/RotationUtils.java' = @{
+        Reference = '353DCDA7193110D8B6468ECDB855469EEAA767F4773B76ED0255A247664F0815'
+        Revision = '643526AC935BA5CB690B6458E42B19A3444B6891468C7B9E9A4F5FF98217E770'
+    }
+}
+
+function Get-TextDigest([string] $Text) {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try { return [BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($Text))).Replace('-', '') }
+    finally { $sha.Dispose() }
+}
+
 $lineCount = 0
 foreach ($relativePath in $sourceFiles) {
     $reference = [System.IO.File]::ReadAllText((Join-Path $referenceRoot $relativePath)).Replace("`r`n", "`n")
     $actual = [System.IO.File]::ReadAllText((Join-Path $targetRoot $relativePath)).Replace("`r`n", "`n")
+    if ($novaContinuityRevisions.ContainsKey($relativePath)) {
+        $revision = $novaContinuityRevisions[$relativePath]
+        if ((Get-TextDigest $reference) -cne $revision.Reference) { throw "Starain reference changed: $relativePath" }
+        if ((Get-TextDigest $actual) -cne $revision.Revision) { throw "Unreviewed change to Nova continuity revision: $relativePath" }
+        Write-Output "PASS $relativePath (reviewed Nova continuity revision; no longer exact Starain parity)"
+        continue
+    }
     $expected = $reference.Replace('today.starain.', 'dev.myth.')
     foreach ($replacement in $allowedChanges[$relativePath]) {
         if (!$expected.Contains($replacement[0])) { throw "Reference changed; adaptation no longer matches: $relativePath / $($replacement[0])" }
@@ -62,4 +86,4 @@ foreach ($relativePath in $sourceFiles) {
     $lineCount += $fileLines
     Write-Output "PASS $relativePath ($fileLines original lines)"
 }
-Write-Output "PASS all $($sourceFiles.Length) files, $lineCount original lines; only the declared namespace and 26.2 API adaptations differ."
+Write-Output "PASS 5 Starain utilities ($lineCount original lines) plus 2 pinned Nova continuity revisions."

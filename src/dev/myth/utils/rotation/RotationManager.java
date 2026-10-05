@@ -30,6 +30,11 @@ public class RotationManager implements Wrapper {
     }
 
     public static void setRotations(final Rotation rotations, final double rotationSpeed, final Function<Rotation, Boolean> raycast) {
+        if (mc.player == null || rotations == null || !Float.isFinite(rotations.getYaw())
+                || !Float.isFinite(rotations.getPitch()) || !Double.isFinite(rotationSpeed) || rotationSpeed < 0) return;
+        if (RotationManager.rotations == null || lastRotations == null || targetRotations == null) {
+            RotationManager.rotations = lastRotations = new Rotation(mc.player.getYRot(), mc.player.getXRot());
+        }
         RotationManager.targetRotations = new Rotation(rotations.getYaw(), clampPitch(rotations.getPitch()));
         RotationManager.rotationSpeed = rotationSpeed;
         RotationManager.raycast = raycast;
@@ -41,11 +46,11 @@ public class RotationManager implements Wrapper {
     public static void smooth() {
         try {
             if (!smoothed) {
-                float targetYaw = targetRotations.getYaw();
+                float targetYaw = RotationUtils.relateToPlayerRotation(targetRotations, lastRotations).getYaw();
                 float targetPitch = clampPitch(targetRotations.getPitch());
 
-                if (raycast != null && (Math.abs(targetYaw - rotations.getYaw()) > 5 || Math.abs(targetPitch - rotations.getPitch()) > 5)) {
-                    final Rotation trueTargetRotations = new Rotation(targetRotations.getYaw(), targetRotations.getPitch());
+                if (raycast != null && (Math.abs(Mth.wrapDegrees(targetYaw - rotations.getYaw())) > 5 || Math.abs(targetPitch - rotations.getPitch()) > 5)) {
+                    final Rotation trueTargetRotations = new Rotation(targetYaw, targetPitch);
 
                     double speed = /*Math.min(*/(Math.random() * Math.random() * Math.random()) * 20/*, MoveUtil.speed() * 30)*/;
                     randomAngle += (float) ((20 + (float) (Math.random() - 0.5) * (Math.random() * Math.random() * Math.random() * 360)) * (mc.player.tickCount / 10 % 2 == 0 ? -1 : 1));
@@ -73,13 +78,17 @@ public class RotationManager implements Wrapper {
                         offset.setYaw(0);
                         offset.setPitch(0);
 
-                        targetYaw = (float) (targetRotations.getYaw() + Math.random() * 2);
+                        targetYaw = (float) (trueTargetRotations.getYaw() + Math.random() * 2);
                         targetPitch = clampPitch((float) (targetRotations.getPitch() + Math.random() * 2));
                     }
                 }
 
                 rotations = RotationUtils.smooth(new Rotation(targetYaw, targetPitch),
                         rotationSpeed + Math.random());
+                // Nova's final quantization uses the last published silent angle as origin.
+                Rotation applied = RotationUtils.applySensitivityPatch(
+                        RotationUtils.relateToPlayerRotation(rotations, lastRotations), lastRotations, false);
+                rotations = Float.isFinite(applied.getYaw()) && Float.isFinite(applied.getPitch()) ? applied : lastRotations;
 
             }
 
@@ -95,6 +104,11 @@ public class RotationManager implements Wrapper {
         return active ? rotations : new Rotation(mc.player.getYRot(), mc.player.getXRot());
     }
 
+    public static void setActive(boolean value) {
+        if (!value && active) correctDisabledRotations();
+        active = value;
+    }
+
     private static float clampPitch(float pitch) {
         return Mth.clamp(pitch, -90.0f, 90.0f);
     }
@@ -107,6 +121,12 @@ public class RotationManager implements Wrapper {
     public void onRespawn(RespawnEvent e) {
         lastRotations = null;
         rotations = null;
+        targetRotations = animationRotation = lastAnimationRotation = null;
+        active = smoothed = false;
+        raycast = null;
+        offset.setYaw(0);
+        offset.setPitch(0);
+        randomAngle = 0;
     }
 
     @EventPriority(Priority.LOW)
@@ -142,18 +162,19 @@ public class RotationManager implements Wrapper {
 
                 float yaw = rotations.getYaw();
                 float pitch = clampPitch(rotations.getPitch());
-                if (!Float.isNaN(yaw) && !Float.isNaN(pitch) && active) {
+                if (Float.isFinite(yaw) && Float.isFinite(pitch) && active) {
                     e.setYaw(yaw);
                     e.setPitch(pitch);
+                } else {
+                    onRespawn(new RespawnEvent());
+                    return;
                 }
 
-                if (Math.abs((rotations.getYaw() - mc.player.getYRot()) % 360) < 1 && Math.abs((rotations.getPitch() - mc.player.getXRot())) < 1) {
-                    active = false;
-
-                    this.correctDisabledRotations();
-                }
-
+                // Rebase against this motion's output, never the preceding tick.
                 lastRotations = rotations;
+                if (Math.abs(Mth.wrapDegrees(rotations.getYaw() - mc.player.getYRot())) < 1 && Math.abs((rotations.getPitch() - mc.player.getXRot())) < 1) {
+                    setActive(false);
+                }
             } else {
                 lastRotations = new Rotation(mc.player.getYRot(), mc.player.getXRot());
             }
@@ -230,12 +251,21 @@ public class RotationManager implements Wrapper {
         }
     }
 
-    private void correctDisabledRotations() {
-        final Rotation rotations = new Rotation(mc.player.getYRot(), mc.player.getXRot());
-        final Rotation fixedRotations = RotationUtils.resetRotation(RotationUtils.applySensitivityPatch(rotations, lastRotations));
-
-        mc.player.setYRot(fixedRotations.getYaw());
-        mc.player.setXRot(fixedRotations.getPitch());
+    private static void correctDisabledRotations() {
+        if (mc.player == null || lastRotations == null || !Float.isFinite(lastRotations.getYaw())) return;
+        float cameraYaw = mc.player.getYRot();
+        if (!Float.isFinite(cameraYaw) || !Float.isFinite(mc.player.getXRot())) return;
+        // Nova: change only the whole-turn representation, preserving the live view.
+        double turns = Math.round(((double) lastRotations.getYaw() - cameraYaw) / 360.0);
+        if (turns == 0) return;
+        float yaw = (float) (cameraYaw + turns * 360.0);
+        if (!Float.isFinite(yaw)) return;
+        float shift = yaw - cameraYaw;
+        mc.player.setYRot(yaw);
+        mc.player.yRotO += shift;
+        // Both hand-sway interpolation endpoints must use the camera's revolution.
+        mc.player.yBob += shift;
+        mc.player.yBobO += shift;
     }
 
 }

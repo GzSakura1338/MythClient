@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 
-/** Mio HUD registry, docking order and normalized placement, initially empty. */
+/** Mio HUD registry, docking order and normalized placement. */
 public final class HudManager {
     public record SettingState(Setting<?> setting, Setting.State state) {}
     public record ElementState(HudElement element, boolean enabled, HudAnchor anchor, int index,
@@ -29,7 +29,11 @@ public final class HudManager {
     public final Setting<Boolean> hudEditor = Setting.bool("hudEditor", "HudEditor", false).action();
     public final Setting<Integer> safeX = Setting.integer("safeX", "SafeX", 1, 0, 20);
     public final Setting<Integer> safeY = Setting.integer("safeY", "SafeY", 1, 0, 10);
-    private final List<Setting<?>> settings = List.of(hudEditor, safeX, safeY);
+    public final Setting<Boolean> smoothWidth = Setting.bool("smoothWidth", "SmoothWidth", false);
+    public final HudColors colors = new HudColors();
+    public final HudData data = new HudData();
+    public final HudRenderAssets assets = new HudRenderAssets();
+    private final List<Setting<?>> settings = new ArrayList<>(List.of(hudEditor, smoothWidth, safeX, safeY));
     private final Map<String, HudElement> elements = new LinkedHashMap<>();
     private final EnumMap<HudAnchor, List<HudElement>> groups = new EnumMap<>(HudAnchor.class);
     private boolean enabled = true, initialized;
@@ -38,14 +42,37 @@ public final class HudManager {
     private float panelX = 85, panelY = 10;
     private boolean panelExpanded = true;
 
-    public HudManager() { for (HudAnchor anchor : HudAnchor.values()) groups.put(anchor, new ArrayList<>()); }
+    public HudManager() {
+        settings.addAll(colors.getSettings());
+        for (HudAnchor anchor : HudAnchor.values()) groups.put(anchor, new ArrayList<>());
+    }
     public void initialize() {
         if (initialized) return;
         keybind = new Keybind("gui_hud", Keybind.UNBOUND);
+        setAnchor(register(new ModuleList()), HudAnchor.TOP_RIGHT);
+        setAnchor(register(new Watermark()), HudAnchor.TOP_LEFT);
+        register(new Welcomer());
+        setAnchor(register(new Direction()), HudAnchor.BOTTOM_LEFT);
+        setAnchor(register(new Position()), HudAnchor.BOTTOM_LEFT);
+        setAnchor(register(new Effects()), HudAnchor.BOTTOM_RIGHT);
+        setAnchor(register(new Metrics()), HudAnchor.BOTTOM_RIGHT);
+        register(new EntityList());
+        register(new Armor());
+        register(new Inventory());
+        register(new Totems());
+        register(new PlayerModel());
+        register(new Chat());
+        register(new Crypto());
+        register(new Graph());
+        register(new Lag());
+        register(new dev.myth.UI.hud.Map());
+        register(new Music());
+        register(new TextRadar());
+        Myth.EVENT_MANAGER.register(data);
         Myth.EVENT_MANAGER.register(this); initialized = true;
     }
     public Keybind getKeybind() { return keybind; }
-    public List<Setting<?>> getSettings() { return settings; }
+    public List<Setting<?>> getSettings() { return List.copyOf(settings); }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public float getPanelX() { return panelX; }
@@ -76,6 +103,10 @@ public final class HudManager {
         for (HudElement element : a) setAnchor(element, second);
         for (HudElement element : b) setAnchor(element, first);
     }
+    /** A HUD backdrop needs the cached blur outside the ClickGUI as well. */
+    public boolean wantsBlur() {
+        return elements.values().stream().anyMatch(element -> element.isEnabled() && element.wantsBlur());
+    }
     public boolean shouldRender(Minecraft client) {
         return enabled && client.level != null && !client.gui.hud.isHidden()
                 && elements.values().stream().anyMatch(HudElement::isEnabled);
@@ -86,6 +117,8 @@ public final class HudManager {
     }
     @EventTarget private void onTick(GameTickEvent event) {
         if (event.getType() != EventType.POST || !initialized) return;
+        data.tick();
+        for (HudElement element : getElements()) if (element.isEnabled()) element.onTick();
         Minecraft client = Minecraft.getInstance();
         if (client.isWindowActive() && client.gui.screen() == null && keybind.getMode() == Keybind.Mode.TOGGLE) {
             while (keybind.consumePress()) enabled = !enabled;
@@ -110,14 +143,17 @@ public final class HudManager {
             }
         }
     }
-    public void render(FontManager fonts, float width, float height, float opacity, boolean editing) {
+    /** Elements are split into the layer under the cached blur and the blurred layer above it. */
+    public void render(FontManager fonts, float width, float height, float opacity, boolean editing, boolean blurLayer) {
         if (!editing && !enabled) return;
+        if (!blurLayer) assets.beginFrame();
         for (HudAnchor anchor : HudAnchor.values()) for (HudElement element : getElements(anchor)) {
-            if (!element.isEnabled()) continue;
+            if (!element.isEnabled() || element.wantsBlur() != blurLayer) continue;
             element.render(new HudElement.RenderContext(ImGui.getBackgroundDrawList(), fonts, width, height,
                     element.getX(), element.getY(), element.getWidth(), element.getHeight(), opacity, editing));
         }
     }
+    public void close() { for (HudElement element : getElements()) element.close(); assets.close(); }
     public JsonObject capture() {
         JsonObject root = persisted.deepCopy();
         root.addProperty("enabled", enabled); root.addProperty("key", keybind.serialize()); root.addProperty("mode", keybind.getMode().getId());

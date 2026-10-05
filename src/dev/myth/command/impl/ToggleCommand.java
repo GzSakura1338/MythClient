@@ -31,7 +31,6 @@ public final class ToggleCommand extends Command {
         Model model = findModel(args[1]);
         model.toggle();
         Myth.CONFIG_MANAGER.saveConfig();
-        ChatUtils.addChatMessage("§7Module §b", model.getName(), model.isEnabled() ? " §aenabled" : " §cdisabled");
     }
 
     @Override

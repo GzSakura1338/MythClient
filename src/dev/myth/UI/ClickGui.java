@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.myth.Myth;
 import dev.myth.UI.font.FontManager;
 import dev.myth.UI.setting.Setting;
+import dev.myth.UI.hud.HudElement;
 import dev.myth.model.Category;
 import dev.myth.model.Model;
 import dev.myth.utils.Keybind;
@@ -43,13 +44,17 @@ public final class ClickGui {
     private static final class Row {
         final String id, name, description;
         final Model model;
+        final HudElement hud;
         final List<Setting<?>> settings;
         boolean expanded;
         final Animation opening = new Animation(0), enabled = new Animation(0), bounce = new Animation(0), keyBounce = new Animation(0);
         float height;
         long flash;
         Row(String id, String name, String description, Model model, List<Setting<?>> settings) {
-            this.id = id; this.name = name; this.description = description; this.model = model; this.settings = settings;
+            this(id, name, description, model, null, settings);
+        }
+        Row(String id, String name, String description, Model model, HudElement hud, List<Setting<?>> settings) {
+            this.id = id; this.name = name; this.description = description; this.model = model; this.hud = hud; this.settings = settings;
         }
     }
     private static final class Control {
@@ -60,6 +65,8 @@ public final class ClickGui {
         long copied, pasted, invalid;
         float[] hsv;
         int lastColor;
+        final Setting<String> filter = Setting.text("filter", "Search", "");
+        int page;
     }
     private static final class SoundPanel {
         final String name;
@@ -81,6 +88,7 @@ public final class ClickGui {
     private final FontManager fonts;
     private final List<Panel> panels = new ArrayList<>();
     private final Map<String, Row> rows = new LinkedHashMap<>();
+    private final Animation hudPanelOpening = new Animation(1);
     private final Map<Setting<?>, Control> controls = new HashMap<>();
     private final List<Snow> snow = new ArrayList<>();
     private Panel dragging;
@@ -173,9 +181,11 @@ public final class ClickGui {
     private void refreshModels() {
         for (Model model : Myth.MODEL_MANAGER.getModels()) rows.computeIfAbsent(model.getId(), id ->
                 new Row(id, model.getName(), model.getDescription(), model, model.getSettings()));
+        for (HudElement element : Myth.HUD_MANAGER.getElements()) rows.computeIfAbsent("@hud/" + element.getId(), id ->
+                new Row(id, element.getName(), element.getDescription(), null, element, element.getSettings()));
     }
     private List<Row> categoryRows(Category category) {
-        return rows.values().stream().filter(row -> (row.model == null ? category == Category.CLIENT : row.model.getCategory() == category)
+        return rows.values().stream().filter(row -> row.hud == null && (row.model == null ? category == Category.CLIENT : row.model.getCategory() == category)
                 && matches(row)).toList();
     }
     private boolean matches(Row row) {
@@ -184,6 +194,7 @@ public final class ClickGui {
         return row.name.toLowerCase(Locale.ROOT).contains(lower) || row.id.toLowerCase(Locale.ROOT).contains(lower);
     }
     private boolean isEnabled(Row row) {
+        if (row.hud != null) return row.hud.isEnabled();
         return row.model != null ? row.model.isEnabled() : row.id.equals("@ui") || (row.id.equals("@hud") ? Myth.HUD_MANAGER.isEnabled() : fonts.isEnabled());
     }
     private float rowHeight() { return 2 + fonts.height() + options.buttonHeight.get(); }
@@ -193,14 +204,22 @@ public final class ClickGui {
         if (!state.open) return rowHeight();
         return switch (setting.getKind()) {
             case ENUM -> rowHeight() * (1 + setting.getChoices().size()) + 1;
+            case SET -> rowHeight() * (3 + Math.min(8, selectionMatches(setting, state).size()));
             case COLOR -> (int) (options.width() + 7 + rowHeight() * (setting.canSync() ? 4 : 3) + (setting.hasAlpha() ? 10 : 2) + .5f);
             default -> rowHeight();
         };
     }
     private float settingsHeight(Row row) {
-        float height = rowHeight(); // Binding is always the last item, like Mio.
+        float height = row.hud == null ? rowHeight() : 0; // HUD elements have no binding row.
         for (Setting<?> setting : row.settings) height += controlHeight(setting);
         return height;
+    }
+    private List<String> selectionMatches(Setting<?> setting, Control state) {
+        String query = (editing == state.filter ? editBuffer : state.filter.get()).toLowerCase(Locale.ROOT);
+        return setting.getEntries().stream().filter(entry -> entry.toLowerCase(Locale.ROOT).contains(query)).toList();
+    }
+    private List<Row> hudRows() {
+        return rows.values().stream().filter(row -> row.hud != null).sorted(java.util.Comparator.comparing(row -> row.name)).toList();
     }
 
     public void render() {
@@ -245,8 +264,8 @@ public final class ClickGui {
         ImGui.setNextWindowPos(0, 0); ImGui.setNextWindowSize(screenWidth, screenHeight);
         ImGui.begin("##mio-canvas", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoSavedSettings
                 | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoNav | ImGuiWindowFlags.NoBringToFrontOnFocus);
-        for (Panel panel : panels) manager.drawBlur(draw, panel.x, panel.y, options.width(),
-                categoryRows(panel.category).isEmpty() ? 14 : panel.height);
+        for (Panel panel : panels) manager.drawPanelBlur(draw, panel.x, panel.y, options.width(),
+                categoryRows(panel.category).isEmpty() || panel.opening.value() == 0 ? 14 : panel.height + .5f);
         for (Panel panel : panels) renderPanel(panel);
         renderSearch();
         renderTooltip();
@@ -254,6 +273,40 @@ public final class ClickGui {
                 : hoveredNow.isEmpty() ? ImGuiMouseCursor.Arrow : ImGuiMouseCursor.Hand);
         ImGui.end();
         finishInput();
+    }
+
+    /** Reuse the Mio row/setting controls in the HUD editor category panel. */
+    public float prepareHudPanel() {
+        refreshModels();
+        float body = Myth.HUD_MANAGER.getElements().isEmpty() ? 0 : 1;
+        float dt = ImGui.getIO().getDeltaTime();
+        for (Row row : rows.values()) if (row.hud != null) {
+            row.height = rowHeight() + row.opening.update(row.expanded ? settingsHeight(row) : 0, options.animSpeed.get() * 2, dt, true);
+            body += row.height;
+        }
+        return 14 + body * hudPanelOpening.update(Myth.HUD_MANAGER.isPanelExpanded() ? 1 : 0,
+                options.animSpeed.get() * 2, Math.min(dt, 1f / 30), true);
+    }
+    public void renderHudRows(float x, float y, float width, float height, float alpha, boolean active) {
+        delta = ImGui.getIO().getDeltaTime(); screenWidth = ImGui.getIO().getDisplaySizeX(); screenHeight = ImGui.getIO().getDisplaySizeY();
+        mx = ImGui.getMousePosX(); my = ImGui.getMousePosY(); opacity = alpha; draw = ImGui.getBackgroundDrawList();
+        hoveredNow = ""; tooltip = ""; hoveredBinding = null;
+        currentHover.clear(); inputActions.clear(); java.util.Arrays.fill(clickUsed, false);
+        if (!ImGui.isMouseDown(0)) { slider = null; colorDragging = null; }
+        clipTop = Math.max(0, y + 14); clipBottom = Math.min(screenHeight, y + height);
+        ImGui.setNextWindowPos(0, 0); ImGui.setNextWindowSize(screenWidth, screenHeight);
+        ImGui.begin("##mio-hud-controls", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoSavedSettings
+                | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoNav | ImGuiWindowFlags.NoBringToFrontOnFocus);
+        if (height > 14) {
+            rect(x, y + 14, x + width, y + height + .5f, options.color(options.bgColor));
+            draw.pushClipRect(x, clipTop, x + width, Math.max(clipTop, clipBottom), true);
+            float offset = y + 15;
+            for (Row row : hudRows()) {
+                renderRow(row, x, offset, width, active && Myth.HUD_MANAGER.isPanelExpanded()); offset += row.height;
+            }
+            draw.popClipRect();
+        }
+        renderTooltip(); ImGui.end(); finishInput();
     }
 
     private void renderPanel(Panel panel) {
@@ -286,7 +339,7 @@ public final class ClickGui {
                 rect(x + width, y + shadow, x + width + shadow, y + panel.height + shadow, color);
             }
         }
-        if (options.line.get()) outline(x - 1, y - 1, x + width, y + (rows.isEmpty() || panel.opening.value() == 0 ? 14 : panel.height + .5f), options.themeColor());
+        if (options.line.get()) panelOutline(x - 1, y - 1, x + width, y + (rows.isEmpty() || panel.opening.value() == 0 ? 14 : panel.height + .5f));
     }
 
     private void renderRow(Row row, float x, float y, float width, boolean active) {
@@ -307,7 +360,8 @@ public final class ClickGui {
         }
         activate(hovered, 0, () -> {
             resetSearch(); editing = null;
-            if (row.model != null) manager.toggle(row.model);
+            if (row.hud != null) row.hud.setEnabled(!row.hud.isEnabled());
+            else if (row.model != null) manager.toggle(row.model);
             else if (row.id.equals("@ui")) manager.requestClose();
             else if (row.id.equals("@hud")) Myth.HUD_MANAGER.setEnabled(!Myth.HUD_MANAGER.isEnabled());
             else fonts.setEnabled(!fonts.isEnabled());
@@ -322,8 +376,8 @@ public final class ClickGui {
             String gear = row.expanded ? "-" : "+";
             text(gear, x + width - 4 - fonts.width("+"), fonts.centeredY(gear, y, height) - bounce, options.color(options.textColor));
         }
-        Keybind keybind = keybind(row);
-        if (options.binds.get() && keybind.getBoundKey().getValue() != -1) {
+        Keybind keybind = row.hud == null ? keybind(row) : null;
+        if (options.binds.get() && keybind != null && keybind.getBoundKey().getValue() != -1) {
             String label = "[" + keybind.getDisplayName() + "]";
             fonts.draw(draw, label, x + options.modulePadding.get() + fonts.width(row.name), fonts.centeredY(label, y, height, .5f) - bounce, options.color(options.textColor), opacity, .5f);
         }
@@ -334,7 +388,7 @@ public final class ClickGui {
             for (Setting<?> setting : row.settings) {
                 if (setting.isVisible()) { renderControl(setting, x, offset, width, active && row.expanded); offset += controlHeight(setting); }
             }
-            renderBinding(row, x, offset, width, active && row.expanded);
+            if (row.hud == null) renderBinding(row, x, offset, width, active && row.expanded);
             draw.popClipRect(); clipBottom = savedBottom;
         }
     }
@@ -379,13 +433,13 @@ public final class ClickGui {
                 activate(hovered, 0, () -> { slider = setting; editing = null; });
                 if (slider == setting && ImGui.isMouseDown(0)) {
                     double number = setting.getMin() + Math.clamp((mx - x) / (width - 2), 0, 1) * (setting.getMax() - setting.getMin());
-                    setting.setNumber(setting.get() instanceof Integer ? Math.round(number) : Math.round(number * 10) / 10d);
+                    setting.setNumber(Math.round(number / setting.getStep()) * setting.getStep());
                 }
                 activate(hovered, 1, () -> beginEdit(setting));
                 float target = (float) ((setting.get().doubleValue() - setting.getMin()) / (setting.getMax() - setting.getMin()));
                 float fill = state.fill.update(target, 6.5f, delta, false);
                 rect(x + 1, y + .5f, (int) (x + Math.clamp((width - 2) * fill, 0, width - 3) + 2), y + height - .5f, options.themeColor());
-                label += ": " + (editing == setting ? editorText() : format(setting.get())) + setting.getUnit();
+                label += ": " + (editing == setting ? editorText() : format(setting)) + setting.getUnit();
             }
             case STRING -> {
                 var setting = (Setting<String>) value;
@@ -409,14 +463,14 @@ public final class ClickGui {
                         activate(choiceHover, 0, () -> setting.set(choice));
                         text(choice.toString(), x + 4, fonts.centeredY(choice.toString(), offset, height), options.color(options.textColor)); offset += height;
                     }
-                    if (options.line.get()) outline(x + 1, y + .5f, x + width - 2, offset - .5f, options.themeColor());
+                    if (options.line.get()) outline(x + 1, y + .5f, x + width - 2, offset - .5f, options.color(options.lineColor));
                 }
             }
             case COLOR -> {
                 var setting = (Setting<Integer>) value;
                 activate(hovered, 1, () -> { state.open = !state.open; state.hsv = null; });
                 rect(x + width - 12, y + 1, x + width - 3.5f, y + 10, options.themeColor());
-                rect(x + width - 11, y + 1.5f, x + width - 4, y + 9.5f, setting.color(options.themeColor()) | 0xff000000);
+                rect(x + width - 11.5f, y + 1.5f, x + width - 4, y + 9.5f, setting.color(options.themeColor()) | 0xff000000);
                 if (state.open) renderColor(setting, x, y + height, width, active);
             }
             case SOUND -> {
@@ -424,6 +478,35 @@ public final class ClickGui {
                 rect(x + 1, y + .5f, x + width - 1, y + height - .5f, options.themeColor());
                 label += ": " + setting.get().substring(setting.get().lastIndexOf('/') + 1);
                 activate(hovered, 0, () -> { soundPicker = "System"; soundSetting = setting; reloadSoundPanels(); });
+            }
+            case SET -> {
+                var setting = (Setting<List<String>>) value;
+                label += ": " + setting.get().size();
+                activate(hovered, 0, () -> state.open = !state.open);
+                activate(hovered, 1, () -> state.open = !state.open);
+                if (state.open) {
+                    float offset = y + height;
+                    renderControl(state.filter, x + 1, offset, width - 2, active); offset += height;
+                    List<String> matches = selectionMatches(setting, state);
+                    int pages = Math.max(1, (matches.size() + 7) / 8); state.page = Math.clamp(state.page, 0, pages - 1);
+                    for (String choice : matches.stream().skip(state.page * 8L).limit(8).toList()) {
+                        boolean choiceHover = hit(x + 2, offset, width - 4, height, active);
+                        if (setting.get().contains(choice)) rect(x + 2, offset + .5f, x + width - 2, offset + height - .5f, options.themeColor());
+                        activate(choiceHover, 0, () -> {
+                            var selected = new ArrayList<>(setting.get());
+                            if (!selected.remove(choice)) selected.add(choice); setting.set(selected);
+                        });
+                        String name = choice.replace("minecraft:", "");
+                        draw.pushClipRect(x + 2, Math.max(clipTop, offset), x + width - 2,
+                                Math.max(Math.max(clipTop, offset), Math.min(clipBottom, offset + height)), true);
+                        text(name, x + 4, fonts.centeredY(name, offset, height), options.color(options.textColor)); draw.popClipRect();
+                        offset += height;
+                    }
+                    String page = "< " + (state.page + 1) + " / " + pages + " >";
+                    text(page, x + 4, fonts.centeredY(page, offset, height), options.color(options.textColor));
+                    activate(hit(x + 2, offset, width / 2 - 2, height, active), 0, () -> state.page = Math.floorMod(state.page - 1, pages));
+                    activate(hit(x + width / 2, offset, width / 2 - 2, height, active), 0, () -> state.page = (state.page + 1) % pages);
+                }
             }
         }
         draw.pushClipRect(x + 2, Math.max(clipTop, y), x + width - 2, Math.max(Math.max(clipTop, y), Math.min(clipBottom, y + height)), true);
@@ -533,8 +616,8 @@ public final class ClickGui {
                 draggingSound.y = Math.clamp(my - dragY, 0, Math.max(0, screenHeight - (draggingSound.expanded ? 15 + rowHeight() * draggingSound.entries.size() : 14)));
             } else draggingSound = null;
         }
-        for (SoundPanel panel : soundPanels) manager.drawBlur(draw, panel.x, panel.y, width,
-                panel.expanded ? 15 + panel.entries.size() * rowHeight() : 14);
+        for (SoundPanel panel : soundPanels) manager.drawPanelBlur(draw, panel.x, panel.y, width,
+                panel.expanded ? 15.5f + panel.entries.size() * rowHeight() : 14);
         for (SoundPanel panel : soundPanels) {
             float x = panel.x, y = panel.y;
             rect(x, y, x + width, y + 14, options.color(options.bgColor));
@@ -560,7 +643,7 @@ public final class ClickGui {
                     offset += rowHeight();
                 }
             }
-            if (options.line.get()) outline(x - 1, y - 1, x + width, panel.expanded ? offset + .5f : y + 14, options.themeColor());
+            if (options.line.get()) panelOutline(x - 1, y - 1, x + width, panel.expanded ? offset + .5f : y + 14);
         }
     }
     private void reloadSoundPanels() {
@@ -621,7 +704,7 @@ public final class ClickGui {
         currentHover.add(id);
     }
     private void click(boolean hovered, int button, Runnable action) {
-        if (!hovered || manager.isClosing() || clickUsed[button] || !ImGui.isMouseClicked(button)) return;
+        if (!hovered || manager.isClosing() || clickUsed[button] || !manager.isMouseClicked(button)) return;
         clickUsed[button] = true;
         inputActions.add(action);
     }
@@ -646,8 +729,16 @@ public final class ClickGui {
     private int packed(int argb) { return Math.clamp(Math.round((argb >>> 24) * opacity), 0, 255) << 24 | (argb & 255) << 16 | argb & 0xff00 | argb >> 16 & 255; }
     private void rect(float x, float y, float endX, float endY, int argb) { MioDraw.rect(draw, x, y, endX, endY, packed(argb)); }
     private void outline(float x, float y, float endX, float endY, int argb) { MioDraw.outline(draw, x, y, endX, endY, packed(argb)); }
+    private void panelOutline(float x, float y, float endX, float endY) {
+        MioDraw.panelOutline(draw, x, y, endX, endY, packed(options.color(options.bgColor)), packed(options.color(options.lineColor)));
+    }
     private void text(String text, float x, float y, int argb) { fonts.draw(draw, text, x, y, argb, opacity); }
-    private static String format(Number number) { return number instanceof Integer ? number.toString() : String.format(Locale.ROOT, "%.1f", number.doubleValue()); }
+    private static String format(Setting<? extends Number> setting) {
+        Number number = setting.get();
+        if (number instanceof Integer) return number.toString();
+        int decimals = Math.max(1, java.math.BigDecimal.valueOf(setting.getStep()).stripTrailingZeros().scale());
+        return String.format(Locale.ROOT, "%." + decimals + "f", number.doubleValue());
+    }
     private void beginEdit(Setting<?> setting) { editing = setting; binding = null; editBuffer = setting.get().toString(); editCursor = editBuffer.length(); resetSearch(); }
     private String editorText() { return editBuffer.substring(0, editCursor) + (System.currentTimeMillis() % 1000 < 500 ? "_" : "") + editBuffer.substring(editCursor); }
     private void resetSearch() { searchFocused = false; search = ""; suggestion = ""; }
@@ -659,6 +750,7 @@ public final class ClickGui {
         }
         if (soundPicker != null) { if (event.isEscape()) soundPicker = null; return true; }
         if (editing != null) { editKey(event); return true; }
+        if (manager.isHudEditorOpen()) return false;
         if (event.key() == GLFW.GLFW_KEY_F && event.hasControlDown()) { searchFocused = !searchFocused; if (!searchFocused) resetSearch(); return true; }
         if (searchFocused) {
             switch (event.key()) {

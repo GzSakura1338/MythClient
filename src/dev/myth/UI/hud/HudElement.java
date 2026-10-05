@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Base for future HUD components; no concrete components are registered. */
-public abstract class HudElement {
+/** Base for HUD components, with placement and persistent settings. */
+public abstract class HudElement implements AutoCloseable {
     public record RenderContext(ImDrawList draw, FontManager fonts, float screenWidth, float screenHeight,
                                 float x, float y, float width, float height, float opacity, boolean editing) {}
     private final String id, name;
@@ -25,8 +25,19 @@ public abstract class HudElement {
     }
     public final String getId() { return id; }
     public final String getName() { return name; }
+    public String getDescription() { return ""; }
+    public boolean isEditable() { return true; }
+    /** Whether this element draws the cached Gaussian backdrop behind itself. */
+    public boolean wantsBlur() { return false; }
     public final boolean isEnabled() { return enabled; }
-    public final void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public final void setEnabled(boolean enabled) {
+        if (this.enabled == enabled) return;
+        this.enabled = enabled;
+        if (enabled) onEnable();
+    }
+    protected void onEnable() {}
+    protected void onTick() {}
+    @Override public void close() {}
     public final HudAnchor getAnchor() { return anchor; }
     public final float getRelativeX() { return relativeX; }
     public final float getRelativeY() { return relativeY; }
@@ -50,7 +61,7 @@ public abstract class HudElement {
         layout(x, y, screenWidth, screenHeight);
     }
     public final boolean contains(float mouseX, float mouseY) {
-        return enabled && mouseX >= x && mouseX <= x + Math.max(width, 4)
+        return enabled && isEditable() && mouseX >= x && mouseX <= x + Math.max(width, 4)
                 && mouseY >= y && mouseY <= y + Math.max(height, 4);
     }
     final void anchor(HudAnchor anchor) { this.anchor = Objects.requireNonNull(anchor); }

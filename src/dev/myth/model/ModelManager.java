@@ -66,7 +66,11 @@ public final class ModelManager {
 
     public void disableAll() {
         for (Model model : getModels()) {
-            disable(model);
+            try {
+                model.setEnabled(false, false);
+            } catch (RuntimeException exception) {
+                Myth.LOGGER.error("Could not disable model {}", model.getId(), exception);
+            }
         }
     }
 

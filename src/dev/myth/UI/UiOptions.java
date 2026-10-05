@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Defaults and order from openmio/nick/SettingValues and nick/Settings. */
+/** Mio control order; defaults match the user's saved ClickGUI preferences. */
 public final class UiOptions {
     private final List<Setting<?>> settings = new ArrayList<>();
     public final Setting<Boolean> reset = add(Setting.bool("reset", "Reset", false).action());
@@ -26,7 +26,10 @@ public final class UiOptions {
     public final Setting<Float> guiScale = add(Setting.decimal("guiScale", "GuiScale", 1, .1f, 2));
     public final Setting<Boolean> snow = add(Setting.bool("snow", "Snow", true).visibleWhen(UiOptions::isWinter));
     public final Setting<Boolean> elements = add(Setting.bool("elements", "Elements", true).group().action());
-    public final Setting<Boolean> line = add(Setting.bool("line", "Line", true).visibleWhen(elements::isExpanded));
+    public final Setting<Boolean> line = add(Setting.bool("line", "Line", true).group().visibleWhen(elements::isExpanded));
+    public final Setting<Integer> lineColor = add(Setting.color("lineColor", "Color", 1941805567, true, false)
+            .description("Border color. Enable Sync to follow the UI theme.")
+            .visibleWhen(() -> elements.isExpanded() && line.isExpanded()));
     public final Setting<Boolean> binds = add(Setting.bool("binds", "Binds", false).visibleWhen(elements::isExpanded));
     public final Setting<Boolean> gear = add(Setting.bool("gear", "Gear", true).visibleWhen(elements::isExpanded));
     public final Setting<Boolean> windowShadow = add(Setting.bool("windowShadow", "WindowShadow", false).group().visibleWhen(elements::isExpanded));
@@ -49,8 +52,10 @@ public final class UiOptions {
     public final Setting<Boolean> colors = add(Setting.bool("colors", "Colors", false).group().action());
     public final Setting<Integer> color = add(Setting.color("color", "Color", 1941805567, true, true).visibleWhen(colors::isExpanded));
     public final Setting<Integer> bgColor = add(Setting.color("bgColor", "BgColor", 1996619784, true, false).visibleWhen(colors::isExpanded));
-    public final Setting<Integer> bgButton = add(Setting.color("bgButton", "BgButton", 715096283, true, true).visibleWhen(colors::isExpanded));
+    public final Setting<Integer> bgButton = add(Setting.color("bgButton", "BgButton", 12425727, true, true).visibleWhen(colors::isExpanded));
     public final Setting<Integer> bgEnabled = add(Setting.color("bgEnabled", "BgEnabled", 1941805567, true, true).visibleWhen(colors::isExpanded));
+
+    public UiOptions() { colors.setExpanded(true); }
 
     public List<Setting<?>> getSettings() { return List.copyOf(settings); }
     public float width() { return 92 + frameWidth.get(); }

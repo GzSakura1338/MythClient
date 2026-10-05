@@ -1,14 +1,20 @@
 package dev.myth;
 
 import dev.myth.model.ModelManager;
+import dev.myth.model.combat.KillAura;
+import dev.myth.model.combat.AutoCrystal;
+import dev.myth.model.misc.FakePlayer;
 import dev.myth.model.player.Sprint;
+import dev.myth.model.player.Scaffold;
 import dev.myth.model.render.FullBright;
 import dev.myth.utils.rotation.RotationManager;
 import dev.myth.event.api.EventManager;
 import dev.myth.event.EventHooks;
 import dev.myth.command.CommandManager;
+import dev.myth.command.Notifications;
 import dev.myth.config.ConfigManager;
 import dev.myth.UI.UiManager;
+import dev.myth.UI.WorldEsp;
 import dev.myth.UI.hud.HudManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.api.ClientModInitializer;
@@ -23,6 +29,7 @@ public final class Myth implements ClientModInitializer {
     public static final CommandManager COMMAND_MANAGER = new CommandManager();
     public static final ConfigManager CONFIG_MANAGER = new ConfigManager();
     public static final HudManager HUD_MANAGER = new HudManager();
+    public static final WorldEsp WORLD_ESP = new WorldEsp();
     public static final UiManager UI_MANAGER = new UiManager();
 
     @Override
@@ -30,11 +37,18 @@ public final class Myth implements ClientModInitializer {
         EventHooks.initialize();
         EVENT_MANAGER.register(RotationManager.newInstance());
         MODEL_MANAGER.register(new Sprint());
+        MODEL_MANAGER.register(new Scaffold());
+        MODEL_MANAGER.register(new KillAura());
+        MODEL_MANAGER.register(new AutoCrystal());
+        MODEL_MANAGER.register(new FakePlayer());
         MODEL_MANAGER.register(new FullBright());
+        MODEL_MANAGER.register(new Notifications()).setEnabled(true, false);
         MODEL_MANAGER.initialize();
         HUD_MANAGER.initialize();
         UI_MANAGER.initialize();
-        CONFIG_MANAGER.initialize();
+        // Vanilla Options loads registered key mappings after mod entrypoints.
+        // Restore Myth last, so options.txt cannot overwrite saved bindings.
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> CONFIG_MANAGER.initialize());
         COMMAND_MANAGER.initialize();
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             CONFIG_MANAGER.stop();

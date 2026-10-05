@@ -14,6 +14,11 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft implements MinecraftAccess {
+    @Inject(method = {"stop", "close", "emergencySaveAndCrash"}, at = @At("HEAD"))
+    private void myth$saveBeforeShutdown(CallbackInfo ci) {
+        Myth.CONFIG_MANAGER.stop();
+    }
+
     @Invoker("pick")
     public abstract void myth$pick(float partialTicks);
 

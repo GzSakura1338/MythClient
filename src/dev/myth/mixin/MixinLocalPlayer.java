@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import dev.myth.Myth;
+import dev.myth.model.combat.KillAura;
 import dev.myth.event.api.EventType;
 import dev.myth.event.impl.MotionEvent;
 import dev.myth.event.impl.PlayerTickEvent;
@@ -11,6 +12,7 @@ import dev.myth.event.impl.RespawnEvent;
 import dev.myth.event.impl.SlowdownEvent;
 import dev.myth.access.MovementInputAccess;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,6 +23,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LocalPlayer.class)
 public abstract class MixinLocalPlayer {
     @Unique private MotionEvent myth$motion;
+
+    @Inject(method = "crit", at = @At("HEAD"))
+    private void myth$criticalSound(Entity target, CallbackInfo ci) {
+        if ((Object) this == net.minecraft.client.Minecraft.getInstance().player)
+            Myth.MODEL_MANAGER.getModel(KillAura.class).ifPresent(KillAura::onCriticalHit);
+    }
 
     @Inject(method = "tick", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/player/AbstractClientPlayer;tick()V"), cancellable = true)

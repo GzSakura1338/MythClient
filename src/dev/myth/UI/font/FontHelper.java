@@ -150,13 +150,21 @@ public class FontHelper implements AutoCloseable {
         this.bufferedImage.flush();
         createGraphics.dispose();
         int inkTop = this.num2, inkBottom = 0;
+        int visibleAlpha = this.antiAlias ? 128 : 180;
         for (var entry : this.hashMap.entrySet()) {
             Inner glyph = entry.getValue();
             int glyphTop = glyph.num2, glyphBottom = 0;
+            int fringeTop = glyph.num2, fringeBottom = 0;
             for (int row = 0; row < glyph.num2; row++) for (int col = 0; col < glyph.num; col++) {
-                if ((this.bufferedImage.getRGB(glyph.x + col, glyph.y + row) >>> 24) == 0) continue;
+                int alpha = this.bufferedImage.getRGB(glyph.x + col, glyph.y + row) >>> 24;
+                if (alpha == 0) continue;
+                fringeTop = Math.min(fringeTop, row); fringeBottom = Math.max(fringeBottom, row + 1);
+                // Faint antialias fringes are not the visible body of the glyph.
+                // Including them shifts thin punctuation relative to other text.
+                if (alpha <= visibleAlpha) continue;
                 glyphTop = Math.min(glyphTop, row); glyphBottom = Math.max(glyphBottom, row + 1);
             }
+            if (glyphBottom == 0) { glyphTop = fringeTop; glyphBottom = fringeBottom; }
             glyph.textTop = glyphTop / 2f; glyph.textBottom = glyphBottom / 2f;
             if (Character.isLetterOrDigit(entry.getKey()) && entry.getKey() < 127 && glyphBottom > 0) {
                 inkTop = Math.min(inkTop, glyphTop); inkBottom = Math.max(inkBottom, glyphBottom);
