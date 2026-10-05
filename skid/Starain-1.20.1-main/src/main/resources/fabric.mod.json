@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "starain",
+  "version": "${version}",
+  "name": "Starain",
+  "description": "我的世界最牛逼的布吉岛外挂也打不过怎",
+  "icon": "assets/starain/icon.png",
+  "environment": "client",
+  "mixins": [
+    "starain.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}"
+  },
+  "accessWidener": "starain.accesswidener"
+}

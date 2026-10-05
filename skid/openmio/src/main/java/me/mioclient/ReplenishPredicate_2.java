@@ -1,0 +1,17 @@
+package me.mioclient;
+
+import me.mioclient.module.player.Replenish;
+
+/* loaded from: mio-yarn.jar:me/mioclient/ReplenishPredicate_2.class */
+public class ReplenishPredicate_2 implements java.util.function.Predicate {
+    public Replenish replenish;
+
+    public ReplenishPredicate_2(Replenish replenish) {
+        this.replenish = replenish;
+    }
+
+    @Override // java.util.function.Predicate
+    public boolean test(Object obj) {
+        return this.replenish.limit.is623();
+    }
+}

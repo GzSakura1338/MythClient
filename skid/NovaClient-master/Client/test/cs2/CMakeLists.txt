@@ -1,0 +1,67 @@
+add_executable(NovaCs2Smoke
+    Smoke.cpp
+    ModuleTests.cpp
+    BlurTests.cpp
+    EspTests.cpp
+    RadarTests.cpp
+    StretchTests.cpp
+    RecoilTests.cpp
+    FovTests.cpp
+    TimeTests.cpp
+    ChamsTests.cpp
+    AimTests.cpp
+    AutoFireTests.cpp
+    HudTests.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/host/Presentation.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/hooks/Dx11Hooks.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/hooks/RadarHook.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/hooks/InputHook.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/hooks/FovHook.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/hooks/TimeHook.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/hooks/ChamsHook.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/chams/Chams.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/environment/Environment.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/camera/Camera.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/hud/HudSnapshot.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/aim/AimSnapshot.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/input/AimPipeline.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/weapons/Weapons.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/weapons/AimPunch.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/radar/Radar.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/Interfaces.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/players/Players.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/sdk/players/PlayerSnapshot.cpp
+    ${PROJECT_SOURCE_DIR}/src/core/modules/Module.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/ModuleManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/misc/team/Team.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/combat/recoilcontrol/RecoilControl.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/combat/recoilcontrol/RecoilController.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/combat/aimbot/Aimbot.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/combat/aimbot/AimController.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/combat/autofire/AutoFire.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/combat/autofire/AutoFireController.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/render/HudModules.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/render/esp2d/Esp2D.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/render/radaresp/RadarESP.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/render/fovcontrol/FovControl.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/render/time/Time.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/render/chams/Chams.cpp
+    ${PROJECT_SOURCE_DIR}/src/cs2/modules/render/watermark/Watermark.cpp
+    ${PROJECT_SOURCE_DIR}/src/config/Config.cpp
+    ${PROJECT_SOURCE_DIR}/src/config/PropertyCodec.cpp
+    ${PROJECT_SOURCE_DIR}/src/config/ConfigManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/bind/BindCapture.cpp
+    ${PROJECT_SOURCE_DIR}/src/bind/BindProperty.cpp
+    ${PROJECT_SOURCE_DIR}/src/bind/BindableManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/bind/InputManager.cpp
+    ${PROJECT_SOURCE_DIR}/src/bind/KeyName.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils/Color.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils/Json.cpp
+    ${PROJECT_SOURCE_DIR}/src/third_party/minhook/src/buffer.c
+    ${PROJECT_SOURCE_DIR}/src/third_party/minhook/src/hde/hde64.c
+    ${PROJECT_SOURCE_DIR}/src/third_party/minhook/src/hook.c
+    ${PROJECT_SOURCE_DIR}/src/third_party/minhook/src/trampoline.c)
+target_include_directories(NovaCs2Smoke PRIVATE ${PROJECT_SOURCE_DIR}/src/third_party/minhook/include)
+target_compile_options(NovaCs2Smoke PRIVATE /utf-8)
+target_link_libraries(NovaCs2Smoke PRIVATE NovaRender NovaUI NovaMedia user32 gdi32 shell32 imm32 dwmapi comctl32 opengl32 bcrypt)
+set_target_properties(NovaCs2Smoke PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/cs2-test")

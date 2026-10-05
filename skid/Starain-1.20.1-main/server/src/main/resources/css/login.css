@@ -1,0 +1,139 @@
+:root {
+    --color-canvas: #faf9f5;
+    --color-surface-card: #efe9de;
+    --color-ink: #141413;
+    --color-body: #3d3d3a;
+    --color-primary: #cc785c;
+    --color-primary-active: #a9583e;
+    --color-primary-disabled: #e6dfd8;
+    --color-hairline: #e6dfd8;
+    --color-error: #c64545;
+    --font-serif: "Cormorant Garamond", Georgia, serif;
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    background-color: var(--color-surface-card);
+    border: 1px solid var(--color-hairline);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(20, 20, 19, 0.04);
+}
+
+.brand-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.brand-spike {
+    color: var(--color-primary);
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.brand-title {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    color: var(--color-ink);
+}
+
+.brand-subtitle {
+    font-size: 13px;
+    color: var(--color-body);
+    opacity: 0.8;
+    margin-top: 4px;
+}
+
+.error-banner {
+    background-color: rgba(198, 69, 69, 0.08);
+    border-left: 3px solid var(--color-error);
+    color: var(--color-error);
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 24px;
+    display: none;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-body);
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    height: 40px;
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--color-ink);
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(204, 120, 92, 0.15);
+}
+
+.submit-btn {
+    width: 100%;
+    height: 40px;
+    background-color: var(--color-ink);
+    color: #ffffff;
+    border: 1px solid var(--color-ink);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.submit-btn:hover {
+    background-color: var(--color-body);
+    border-color: var(--color-body);
+}
+
+.submit-btn:disabled {
+    background-color: var(--color-primary-disabled);
+    cursor: not-allowed;
+}

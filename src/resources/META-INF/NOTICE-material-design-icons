@@ -1,0 +1,12 @@
+Category header icons are derived from Google Material Design Icons.
+Copyright Google LLC. Licensed under the Apache License, Version 2.0.
+Source: https://github.com/google/material-design-icons
+The original black PNG pixels were changed to white; their alpha masks are unchanged.
+
+combat.png: png/device/gps_fixed/materialicons/24dp/2x/baseline_gps_fixed_black_24dp.png
+misc.png: png/action/extension/materialicons/24dp/2x/baseline_extension_black_24dp.png
+player.png: png/social/person/materialicons/24dp/2x/baseline_person_black_24dp.png
+render.png: png/action/visibility/materialicons/24dp/2x/baseline_visibility_black_24dp.png
+client.png: png/action/settings/materialicons/24dp/2x/baseline_settings_black_24dp.png
+hud.png: png/action/dashboard/materialicons/24dp/2x/baseline_dashboard_black_24dp.png
+sounds.png: png/image/music_note/materialicons/24dp/2x/baseline_music_note_black_24dp.png

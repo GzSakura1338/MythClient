@@ -1,0 +1,10 @@
+accessWidener v1 named
+
+accessible field net/minecraft/world/entity/Entity yRotO F
+accessible field net/minecraft/world/entity/Entity xRotO F
+
+accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)D
+
+accessible field net/minecraft/world/entity/LivingEntity noJumpDelay I
+
+accessible method net/minecraft/client/multiplayer/ClientLevel getBlockStatePredictionHandler ()Lnet/minecraft/client/multiplayer/prediction/BlockStatePredictionHandler;

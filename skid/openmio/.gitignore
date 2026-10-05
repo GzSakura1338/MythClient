@@ -1,0 +1,42 @@
+# Build output / Gradle
+build/
+.gradle/
+out/
+bin/
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# macOS
+.DS_Store
+
+# OS / editor cruft
+*.swp
+*.swo
+*~
+nbproject/private/
+
+# Fabric Loom dev run dir — game data, logs, worlds; the loader jar in run/mods/ is
+# documented in README; don't commit it.
+run/
+
+# One-off snapshots and helper scripts from the deobf process
+errors-snapshot.txt
+summary.txt
+fix-*.py
+
+# Local environment overrides
+.env
+*.local
+
+# Logs / crash dumps anywhere outside run/
+*.log
+hs_err_pid*.log

@@ -1,0 +1,57 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>CLOUD TEST loading</title>
+<style>body{background:#141720;color:#e6edf8;font:16px system-ui;margin:20px}video{width:480px;max-width:100%}pre{white-space:pre-wrap}button{padding:12px}</style>
+<h2>Cloud streaming capability test</h2>
+<video autoplay muted playsinline></video>
+<button id="lock">Test pointer lock (click, then Escape to release)</button>
+<pre id="report"></pre>
+<script>
+// Synthetic local media only: no camera, microphone, account or remote server.
+const report=document.querySelector('#report'),video=document.querySelector('video');
+const result={};
+let sender,receiver,stream,timer;
+const timeout=(promise,ms,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error(label)),ms))]);
+function show(){report.textContent=JSON.stringify(result,null,2);}
+document.querySelector('#lock').onclick=async()=>{
+ try{await document.body.requestPointerLock();result.pointerLock=document.pointerLockElement===document.body?'locked':'pending';}
+ catch(e){result.pointerLock=e.name+': '+e.message;}show();
+};
+document.addEventListener('pointerlockchange',()=>{result.pointerLock=document.pointerLockElement?'locked':'released';show();});
+document.addEventListener('pointerlockerror',()=>{result.pointerLock='denied';show();});
+(async()=>{
+ try{
+  result.h264=video.canPlayType('video/mp4; codecs="avc1.42E01E"')||'unsupported';
+  result.aac=video.canPlayType('audio/mp4; codecs="mp4a.40.2"')||'unsupported';
+  result.mse=typeof MediaSource!=='undefined'&&MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E,mp4a.40.2"');
+  result.webgl2=!!document.createElement('canvas').getContext('webgl2');
+  result.pointerLockAPI=typeof document.body.requestPointerLock==='function';
+  result.rtcCodecs=RTCRtpReceiver.getCapabilities('video').codecs.map(c=>c.mimeType).filter((c,i,a)=>a.indexOf(c)===i);
+  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;
+  const ctx=canvas.getContext('2d');let frame=0;
+  timer=setInterval(()=>{ctx.fillStyle=`hsl(${frame++*11} 75% 40%)`;ctx.fillRect(0,0,320,180);ctx.fillStyle='white';ctx.font='24px sans-serif';ctx.fillText('WebRTC '+frame,30,100);},33);
+  stream=canvas.captureStream(30);sender=new RTCPeerConnection({iceServers:[]});receiver=new RTCPeerConnection({iceServers:[]});
+  const errors=[];const pending=[[],[]];
+  sender.onicecandidate=e=>{if(e.candidate){if(receiver.remoteDescription)receiver.addIceCandidate(e.candidate).catch(e=>errors.push(e.message));else pending[0].push(e.candidate);}};
+  receiver.onicecandidate=e=>{if(e.candidate){if(sender.remoteDescription)sender.addIceCandidate(e.candidate).catch(e=>errors.push(e.message));else pending[1].push(e.candidate);}};
+  receiver.ontrack=e=>{video.srcObject=e.streams[0];video.play().catch(e=>errors.push(e.message));};
+  const received=new Promise(resolve=>{receiver.ondatachannel=e=>{e.channel.onmessage=m=>resolve(m.data==='Nova cloud input');};});
+  const channel=sender.createDataChannel('input');channel.onopen=()=>channel.send('Nova cloud input');
+  sender.addTrack(stream.getVideoTracks()[0],stream);
+  if(new URLSearchParams(location.search).has('h264')){
+   const codecs=RTCRtpSender.getCapabilities('video').codecs.filter(c=>c.mimeType.toLowerCase()==='video/h264');
+   if(!codecs.length)throw Error('WebRTC H.264 encoder unavailable');
+   sender.getTransceivers()[0].setCodecPreferences(codecs);
+  }
+  await sender.setLocalDescription(await sender.createOffer());await receiver.setRemoteDescription(sender.localDescription);
+  for(const c of pending[0])await receiver.addIceCandidate(c);
+  await receiver.setLocalDescription(await receiver.createAnswer());await sender.setRemoteDescription(receiver.localDescription);
+  for(const c of pending[1])await sender.addIceCandidate(c);
+  result.dataChannel=await timeout(received,10000,'data channel timeout');
+  await timeout(new Promise(resolve=>{const poll=async()=>{if(!receiver)return;const stats=await receiver.getStats();for(const s of stats.values())if(s.type==='inbound-rtp'&&s.kind==='video'&&s.framesDecoded>5){result.framesDecoded=s.framesDecoded;result.codec=stats.get(s.codecId)?.mimeType;resolve();return;}setTimeout(poll,100);};poll();}),10000,'video decoding timeout');
+  result.iceErrors=errors;show();
+  document.title=`CLOUD PASS h264=${result.h264} aac=${result.aac} mse=${result.mse} gl2=${result.webgl2} codec=${result.codec} decoded=${result.framesDecoded} data=${result.dataChannel}`;
+ }catch(e){result.error=e.message;show();document.title='CLOUD FAIL '+JSON.stringify(result);}
+ finally{clearInterval(timer);stream?.getTracks().forEach(t=>t.stop());sender?.close();receiver?.close();sender=receiver=null;}
+})();
+</script>

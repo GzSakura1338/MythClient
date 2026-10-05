@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Media loading</title>
+<style>body{background:#141720;color:#e6edf8;font:16px system-ui;margin:20px}video{width:100%;max-width:640px}pre{white-space:pre-wrap}</style>
+<h2>HTML5 media diagnostics</h2>
+<video controls playsinline muted></video><pre></pre>
+<script>
+const video=document.querySelector('video'),report=document.querySelector('pre');
+const codecs={vp8:'video/webm; codecs="vp8"',vp9:'video/webm; codecs="vp9"',av1:'video/mp4; codecs="av01.0.04M.08"',h264:'video/mp4; codecs="avc1.42E01E"',aac:'audio/mp4; codecs="mp4a.40.2"',opus:'audio/webm; codecs="opus"'};
+const support=Object.fromEntries(Object.entries(codecs).map(([k,v])=>[k,video.canPlayType(v)||'unsupported']));
+report.textContent=JSON.stringify(support,null,2);
+const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;
+const ctx=canvas.getContext('2d'),stream=canvas.captureStream(24),chunks=[];
+const recorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp8'});
+let tick=0;const timer=setInterval(()=>{ctx.fillStyle=`hsl(${tick++*8} 70% 40%)`;ctx.fillRect(0,0,320,180);ctx.fillStyle='white';ctx.font='24px sans-serif';ctx.fillText('HTML5 video '+tick,24,95);},40);
+recorder.ondataavailable=e=>chunks.push(e.data);
+recorder.onstop=async()=>{
+ clearInterval(timer);stream.getTracks().forEach(t=>t.stop());
+ video.src=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));
+ try{await video.play();setTimeout(()=>{document.title=(video.currentTime>.25?'MEDIA PASS ':'MEDIA FAIL ')+JSON.stringify(support);},800);}
+ catch(e){document.title='MEDIA FAIL '+e.name;report.textContent+='\n'+e;}
+};
+recorder.start();setTimeout(()=>recorder.stop(),1600);
+</script>

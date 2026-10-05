@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0-windows</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../../injector/ui/BrowserRuntime.cs" Link="BrowserRuntime.cs" />
+    <EmbeddedResource Include="../../../../out/browser/runtime.zip" LogicalName="Nova.Browser.Runtime" />
+    <EmbeddedResource Include="../../../../out/browser/runtime.sha256" LogicalName="Nova.Browser.Hash" />
+  </ItemGroup>
+</Project>

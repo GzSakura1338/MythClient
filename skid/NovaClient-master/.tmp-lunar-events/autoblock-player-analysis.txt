@@ -1,0 +1,2830 @@
+Compiled from "SourceFile"
+public class net.minecraft.client.entity.EntityPlayerSP extends net.minecraft.client.entity.AbstractClientPlayer implements com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.RRCRRCORICCHOHHIRCHIROOHIIOHCO.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.HHCCIRHCCCIIRHCROHIORHIRHHIORH {
+  public net.minecraft.client.network.NetHandlerPlayClient sendQueue;
+
+  public net.minecraft.stats.StatFileWriter statWriter;
+
+  public double lastReportedPosX;
+
+  public double lastReportedPosY;
+
+  public double lastReportedPosZ;
+
+  public float lastReportedYaw;
+
+  public float lastReportedPitch;
+
+  public boolean serverSneakState;
+
+  public boolean serverSprintState;
+
+  public int positionUpdateTicks;
+
+  public boolean hasValidHealth;
+
+  public java.lang.String clientBrand;
+
+  public net.minecraft.util.MovementInput movementInput;
+
+  public net.minecraft.client.Minecraft mc;
+
+  public int sprintToggleTimer;
+
+  public int sprintingTicksLeft;
+
+  public float renderArmYaw;
+
+  public float renderArmPitch;
+
+  public float prevRenderArmYaw;
+
+  public float prevRenderArmPitch;
+
+  public int horseJumpPowerCounter;
+
+  public float horseJumpPower;
+
+  public float timeInPortal;
+
+  public float prevTimeInPortal;
+
+  public net.minecraft.client.entity.EntityPlayerSP(net.minecraft.client.Minecraft, net.minecraft.world.World, net.minecraft.client.network.NetHandlerPlayClient, net.minecraft.stats.StatFileWriter);
+    Code:
+       0: aload_0
+       1: aload_2
+       2: aload_3
+       3: invokevirtual #77                 // Method net/minecraft/client/network/NetHandlerPlayClient.getGameProfile:()Lcom/mojang/authlib/GameProfile;
+       6: invokespecial #80                 // Method net/minecraft/client/entity/AbstractClientPlayer."<init>":(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V
+       9: aload_0
+      10: aload_3
+      11: putfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      14: aload_0
+      15: aload         4
+      17: putfield      #84                 // Field statWriter:Lnet/minecraft/stats/StatFileWriter;
+      20: aload_0
+      21: aload_1
+      22: putfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      25: aload_0
+      26: iconst_0
+      27: putfield      #89                 // Field dimension:I
+      30: return
+
+  public boolean attackEntityFrom(net.minecraft.util.DamageSource, float);
+    Code:
+       0: new           #97                 // class org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable
+       3: dup
+       4: ldc           #98                 // String attackEntityFrom
+       6: iconst_1
+       7: invokespecial #101                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable."<init>":(Ljava/lang/String;Z)V
+      10: astore_3
+      11: aload_0
+      12: aload_1
+      13: fload_2
+      14: aload_3
+      15: invokevirtual #105                // Method handler$zhl001$lunar$entityLivingHurtEvent:(Lnet/minecraft/util/DamageSource;FLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V
+      18: aload_3
+      19: invokevirtual #109                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable.isCancelled:()Z
+      22: ifeq          30
+      25: aload_3
+      26: invokevirtual #112                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable.getReturnValueZ:()Z
+      29: ireturn
+      30: iconst_0
+      31: ireturn
+
+  public void heal(float);
+    Code:
+       0: return
+
+  public void mountEntity(net.minecraft.entity.Entity);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #119                // Method net/minecraft/client/entity/AbstractClientPlayer.mountEntity:(Lnet/minecraft/entity/Entity;)V
+       5: aload_1
+       6: instanceof    #121                // class net/minecraft/entity/item/EntityMinecart
+       9: ifeq          34
+      12: aload_0
+      13: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      16: invokevirtual #127                // Method net/minecraft/client/Minecraft.getSoundHandler:()Lnet/minecraft/client/audio/SoundHandler;
+      19: new           #129                // class net/minecraft/client/audio/MovingSoundMinecartRiding
+      22: dup
+      23: aload_0
+      24: aload_1
+      25: checkcast     #121                // class net/minecraft/entity/item/EntityMinecart
+      28: invokespecial #132                // Method net/minecraft/client/audio/MovingSoundMinecartRiding."<init>":(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/item/EntityMinecart;)V
+      31: invokevirtual #138                // Method net/minecraft/client/audio/SoundHandler.playSound:(Lnet/minecraft/client/audio/ISound;)V
+      34: return
+
+  public void onUpdate();
+    Code:
+       0: aload_0
+       1: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+       4: new           #146                // class net/minecraft/util/BlockPos
+       7: dup
+       8: aload_0
+       9: getfield      #149                // Field posX:D
+      12: dconst_0
+      13: aload_0
+      14: getfield      #152                // Field posZ:D
+      17: invokespecial #155                // Method net/minecraft/util/BlockPos."<init>":(DDD)V
+      20: invokevirtual #161                // Method net/minecraft/world/World.isBlockLoaded:(Lnet/minecraft/util/BlockPos;)Z
+      23: ifne          27
+      26: return
+      27: aload_0
+      28: invokespecial #163                // Method net/minecraft/client/entity/AbstractClientPlayer.onUpdate:()V
+      31: aload_0
+      32: invokevirtual #166                // Method isRiding:()Z
+      35: ifeq          103
+      38: aload_0
+      39: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      42: new           #17                 // class net/minecraft/network/play/client/C03PacketPlayer$C05PacketPlayerLook
+      45: dup
+      46: aload_0
+      47: getfield      #169                // Field rotationYaw:F
+      50: aload_0
+      51: getfield      #172                // Field rotationPitch:F
+      54: aload_0
+      55: getfield      #175                // Field onGround:Z
+      58: invokespecial #178                // Method net/minecraft/network/play/client/C03PacketPlayer$C05PacketPlayerLook."<init>":(FFZ)V
+      61: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      64: aload_0
+      65: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      68: new           #184                // class net/minecraft/network/play/client/C0CPacketInput
+      71: dup
+      72: aload_0
+      73: getfield      #187                // Field moveStrafing:F
+      76: aload_0
+      77: getfield      #190                // Field moveForward:F
+      80: aload_0
+      81: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+      84: getfield      #197                // Field net/minecraft/util/MovementInput.jump:Z
+      87: aload_0
+      88: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+      91: getfield      #200                // Field net/minecraft/util/MovementInput.sneak:Z
+      94: invokespecial #203                // Method net/minecraft/network/play/client/C0CPacketInput."<init>":(FFZZ)V
+      97: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+     100: goto          107
+     103: aload_0
+     104: invokevirtual #206                // Method onUpdateWalkingPlayer:()V
+     107: return
+
+  public void onUpdateWalkingPlayer();
+    Code:
+       0: aload_0
+       1: invokevirtual #209                // Method isSprinting:()Z
+       4: istore_1
+       5: iload_1
+       6: aload_0
+       7: getfield      #211                // Field serverSprintState:Z
+      10: if_icmpeq     61
+      13: iload_1
+      14: ifeq          38
+      17: aload_0
+      18: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      21: new           #30                 // class net/minecraft/network/play/client/C0BPacketEntityAction
+      24: dup
+      25: aload_0
+      26: getstatic     #215                // Field net/minecraft/network/play/client/C0BPacketEntityAction$Action.START_SPRINTING:Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;
+      29: invokespecial #218                // Method net/minecraft/network/play/client/C0BPacketEntityAction."<init>":(Lnet/minecraft/entity/Entity;Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;)V
+      32: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      35: goto          56
+      38: aload_0
+      39: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      42: new           #30                 // class net/minecraft/network/play/client/C0BPacketEntityAction
+      45: dup
+      46: aload_0
+      47: getstatic     #221                // Field net/minecraft/network/play/client/C0BPacketEntityAction$Action.STOP_SPRINTING:Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;
+      50: invokespecial #218                // Method net/minecraft/network/play/client/C0BPacketEntityAction."<init>":(Lnet/minecraft/entity/Entity;Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;)V
+      53: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      56: aload_0
+      57: iload_1
+      58: putfield      #211                // Field serverSprintState:Z
+      61: aload_0
+      62: invokevirtual #224                // Method isSneaking:()Z
+      65: istore_2
+      66: iload_2
+      67: aload_0
+      68: getfield      #226                // Field serverSneakState:Z
+      71: if_icmpeq     122
+      74: iload_2
+      75: ifeq          99
+      78: aload_0
+      79: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      82: new           #30                 // class net/minecraft/network/play/client/C0BPacketEntityAction
+      85: dup
+      86: aload_0
+      87: getstatic     #229                // Field net/minecraft/network/play/client/C0BPacketEntityAction$Action.START_SNEAKING:Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;
+      90: invokespecial #218                // Method net/minecraft/network/play/client/C0BPacketEntityAction."<init>":(Lnet/minecraft/entity/Entity;Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;)V
+      93: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      96: goto          117
+      99: aload_0
+     100: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+     103: new           #30                 // class net/minecraft/network/play/client/C0BPacketEntityAction
+     106: dup
+     107: aload_0
+     108: getstatic     #232                // Field net/minecraft/network/play/client/C0BPacketEntityAction$Action.STOP_SNEAKING:Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;
+     111: invokespecial #218                // Method net/minecraft/network/play/client/C0BPacketEntityAction."<init>":(Lnet/minecraft/entity/Entity;Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;)V
+     114: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+     117: aload_0
+     118: iload_2
+     119: putfield      #226                // Field serverSneakState:Z
+     122: aload_0
+     123: invokevirtual #235                // Method isCurrentViewEntity:()Z
+     126: ifeq          512
+     129: aload_0
+     130: getfield      #149                // Field posX:D
+     133: aload_0
+     134: getfield      #237                // Field lastReportedPosX:D
+     137: dsub
+     138: dstore_3
+     139: aload_0
+     140: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     143: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     146: aload_0
+     147: getfield      #248                // Field lastReportedPosY:D
+     150: dsub
+     151: dstore        5
+     153: aload_0
+     154: getfield      #152                // Field posZ:D
+     157: aload_0
+     158: getfield      #250                // Field lastReportedPosZ:D
+     161: dsub
+     162: dstore        7
+     164: aload_0
+     165: getfield      #169                // Field rotationYaw:F
+     168: aload_0
+     169: getfield      #252                // Field lastReportedYaw:F
+     172: fsub
+     173: f2d
+     174: dstore        9
+     176: aload_0
+     177: getfield      #172                // Field rotationPitch:F
+     180: aload_0
+     181: getfield      #254                // Field lastReportedPitch:F
+     184: fsub
+     185: f2d
+     186: dstore        11
+     188: dload_3
+     189: dload_3
+     190: dmul
+     191: dload         5
+     193: dload         5
+     195: dmul
+     196: dadd
+     197: dload         7
+     199: dload         7
+     201: dmul
+     202: dadd
+     203: ldc2_w        #255                // double 9.0E-4d
+     206: dcmpl
+     207: ifgt          219
+     210: aload_0
+     211: getfield      #258                // Field positionUpdateTicks:I
+     214: bipush        20
+     216: if_icmplt     223
+     219: iconst_1
+     220: goto          224
+     223: iconst_0
+     224: istore        13
+     226: dload         9
+     228: dconst_0
+     229: dcmpl
+     230: ifne          240
+     233: dload         11
+     235: dconst_0
+     236: dcmpl
+     237: ifeq          244
+     240: iconst_1
+     241: goto          245
+     244: iconst_0
+     245: istore        14
+     247: aload_0
+     248: getfield      #261                // Field ridingEntity:Lnet/minecraft/entity/Entity;
+     251: ifnonnull     404
+     254: iload         13
+     256: ifeq          308
+     259: iload         14
+     261: ifeq          308
+     264: aload_0
+     265: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+     268: new           #22                 // class net/minecraft/network/play/client/C03PacketPlayer$C06PacketPlayerPosLook
+     271: dup
+     272: aload_0
+     273: getfield      #149                // Field posX:D
+     276: aload_0
+     277: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     280: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     283: aload_0
+     284: getfield      #152                // Field posZ:D
+     287: aload_0
+     288: getfield      #169                // Field rotationYaw:F
+     291: aload_0
+     292: getfield      #172                // Field rotationPitch:F
+     295: aload_0
+     296: getfield      #175                // Field onGround:Z
+     299: invokespecial #264                // Method net/minecraft/network/play/client/C03PacketPlayer$C06PacketPlayerPosLook."<init>":(DDDFFZ)V
+     302: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+     305: goto          444
+     308: iload         13
+     310: ifeq          349
+     313: aload_0
+     314: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+     317: new           #25                 // class net/minecraft/network/play/client/C03PacketPlayer$C04PacketPlayerPosition
+     320: dup
+     321: aload_0
+     322: getfield      #149                // Field posX:D
+     325: aload_0
+     326: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     329: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     332: aload_0
+     333: getfield      #152                // Field posZ:D
+     336: aload_0
+     337: getfield      #175                // Field onGround:Z
+     340: invokespecial #267                // Method net/minecraft/network/play/client/C03PacketPlayer$C04PacketPlayerPosition."<init>":(DDDZ)V
+     343: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+     346: goto          444
+     349: iload         14
+     351: ifeq          383
+     354: aload_0
+     355: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+     358: new           #17                 // class net/minecraft/network/play/client/C03PacketPlayer$C05PacketPlayerLook
+     361: dup
+     362: aload_0
+     363: getfield      #169                // Field rotationYaw:F
+     366: aload_0
+     367: getfield      #172                // Field rotationPitch:F
+     370: aload_0
+     371: getfield      #175                // Field onGround:Z
+     374: invokespecial #178                // Method net/minecraft/network/play/client/C03PacketPlayer$C05PacketPlayerLook."<init>":(FFZ)V
+     377: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+     380: goto          444
+     383: aload_0
+     384: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+     387: new           #19                 // class net/minecraft/network/play/client/C03PacketPlayer
+     390: dup
+     391: aload_0
+     392: getfield      #175                // Field onGround:Z
+     395: invokespecial #270                // Method net/minecraft/network/play/client/C03PacketPlayer."<init>":(Z)V
+     398: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+     401: goto          444
+     404: aload_0
+     405: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+     408: new           #22                 // class net/minecraft/network/play/client/C03PacketPlayer$C06PacketPlayerPosLook
+     411: dup
+     412: aload_0
+     413: getfield      #273                // Field motionX:D
+     416: ldc2_w        #274                // double -999.0d
+     419: aload_0
+     420: getfield      #278                // Field motionZ:D
+     423: aload_0
+     424: getfield      #169                // Field rotationYaw:F
+     427: aload_0
+     428: getfield      #172                // Field rotationPitch:F
+     431: aload_0
+     432: getfield      #175                // Field onGround:Z
+     435: invokespecial #264                // Method net/minecraft/network/play/client/C03PacketPlayer$C06PacketPlayerPosLook."<init>":(DDDFFZ)V
+     438: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+     441: iconst_0
+     442: istore        13
+     444: aload_0
+     445: dup
+     446: getfield      #258                // Field positionUpdateTicks:I
+     449: iconst_1
+     450: iadd
+     451: putfield      #258                // Field positionUpdateTicks:I
+     454: iload         13
+     456: ifeq          491
+     459: aload_0
+     460: aload_0
+     461: getfield      #149                // Field posX:D
+     464: putfield      #237                // Field lastReportedPosX:D
+     467: aload_0
+     468: aload_0
+     469: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     472: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     475: putfield      #248                // Field lastReportedPosY:D
+     478: aload_0
+     479: aload_0
+     480: getfield      #152                // Field posZ:D
+     483: putfield      #250                // Field lastReportedPosZ:D
+     486: aload_0
+     487: iconst_0
+     488: putfield      #258                // Field positionUpdateTicks:I
+     491: iload         14
+     493: ifeq          512
+     496: aload_0
+     497: aload_0
+     498: getfield      #169                // Field rotationYaw:F
+     501: putfield      #252                // Field lastReportedYaw:F
+     504: aload_0
+     505: aload_0
+     506: getfield      #172                // Field rotationPitch:F
+     509: putfield      #254                // Field lastReportedPitch:F
+     512: return
+
+  public net.minecraft.entity.item.EntityItem dropOneItem(boolean);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: aconst_null
+       3: invokevirtual #284                // Method handler$zhl001$lunar$dropItemEvent:(ZLorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V
+       6: iload_1
+       7: ifeq          16
+      10: getstatic     #288                // Field net/minecraft/network/play/client/C07PacketPlayerDigging$Action.DROP_ALL_ITEMS:Lnet/minecraft/network/play/client/C07PacketPlayerDigging$Action;
+      13: goto          19
+      16: getstatic     #291                // Field net/minecraft/network/play/client/C07PacketPlayerDigging$Action.DROP_ITEM:Lnet/minecraft/network/play/client/C07PacketPlayerDigging$Action;
+      19: astore_2
+      20: aload_0
+      21: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      24: new           #14                 // class net/minecraft/network/play/client/C07PacketPlayerDigging
+      27: dup
+      28: aload_2
+      29: getstatic     #295                // Field net/minecraft/util/BlockPos.ORIGIN:Lnet/minecraft/util/BlockPos;
+      32: getstatic     #301                // Field net/minecraft/util/EnumFacing.DOWN:Lnet/minecraft/util/EnumFacing;
+      35: invokespecial #304                // Method net/minecraft/network/play/client/C07PacketPlayerDigging."<init>":(Lnet/minecraft/network/play/client/C07PacketPlayerDigging$Action;Lnet/minecraft/util/BlockPos;Lnet/minecraft/util/EnumFacing;)V
+      38: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      41: aconst_null
+      42: areturn
+
+  public void joinEntityItemWithWorld(net.minecraft.entity.item.EntityItem);
+    Code:
+       0: return
+
+  public void sendChatMessage(java.lang.String);
+    Code:
+       0: new           #311                // class org/spongepowered/asm/mixin/injection/callback/CallbackInfo
+       3: dup
+       4: ldc_w         #312                // String sendChatMessage
+       7: iconst_1
+       8: invokespecial #313                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo."<init>":(Ljava/lang/String;Z)V
+      11: astore_2
+      12: aload_0
+      13: aload_1
+      14: aload_2
+      15: invokevirtual #317                // Method handler$zhl001$lunar$chatMessageEvents:(Ljava/lang/String;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V
+      18: aload_2
+      19: invokevirtual #318                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo.isCancelled:()Z
+      22: ifeq          26
+      25: return
+      26: aload_0
+      27: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+      30: new           #320                // class net/minecraft/network/play/client/C01PacketChatMessage
+      33: dup
+      34: aload_1
+      35: invokespecial #322                // Method net/minecraft/network/play/client/C01PacketChatMessage."<init>":(Ljava/lang/String;)V
+      38: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      41: return
+
+  public void swingItem();
+    Code:
+       0: aload_0
+       1: invokespecial #325                // Method net/minecraft/client/entity/AbstractClientPlayer.swingItem:()V
+       4: aload_0
+       5: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+       8: new           #327                // class net/minecraft/network/play/client/C0APacketAnimation
+      11: dup
+      12: invokespecial #329                // Method net/minecraft/network/play/client/C0APacketAnimation."<init>":()V
+      15: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      18: return
+
+  public void respawnPlayer();
+    Code:
+       0: aload_0
+       1: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+       4: new           #34                 // class net/minecraft/network/play/client/C16PacketClientStatus
+       7: dup
+       8: getstatic     #334                // Field net/minecraft/network/play/client/C16PacketClientStatus$EnumState.PERFORM_RESPAWN:Lnet/minecraft/network/play/client/C16PacketClientStatus$EnumState;
+      11: invokespecial #337                // Method net/minecraft/network/play/client/C16PacketClientStatus."<init>":(Lnet/minecraft/network/play/client/C16PacketClientStatus$EnumState;)V
+      14: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      17: return
+
+  public void damageEntity(net.minecraft.util.DamageSource, float);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #343                // Method isEntityInvulnerable:(Lnet/minecraft/util/DamageSource;)Z
+       5: ifeq          9
+       8: return
+       9: aload_0
+      10: aload_0
+      11: invokevirtual #347                // Method getHealth:()F
+      14: fload_2
+      15: fsub
+      16: aload_0
+      17: aload_1
+      18: fload_2
+      19: aconst_null
+      20: invokevirtual #351                // Method handler$zhl001$lunar$stopAnimatingOnDamage:(Lnet/minecraft/util/DamageSource;FLorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V
+      23: invokevirtual #354                // Method setHealth:(F)V
+      26: return
+
+  public void closeScreen();
+    Code:
+       0: aload_0
+       1: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+       4: new           #357                // class net/minecraft/network/play/client/C0DPacketCloseWindow
+       7: dup
+       8: aload_0
+       9: getfield      #361                // Field openContainer:Lnet/minecraft/inventory/Container;
+      12: getfield      #366                // Field net/minecraft/inventory/Container.windowId:I
+      15: invokespecial #369                // Method net/minecraft/network/play/client/C0DPacketCloseWindow."<init>":(I)V
+      18: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      21: aload_0
+      22: invokevirtual #372                // Method closeScreenAndDropStack:()V
+      25: return
+
+  public void closeScreenAndDropStack();
+    Code:
+       0: aload_0
+       1: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+       4: aconst_null
+       5: invokevirtual #382                // Method net/minecraft/entity/player/InventoryPlayer.setItemStack:(Lnet/minecraft/item/ItemStack;)V
+       8: aload_0
+       9: invokespecial #384                // Method net/minecraft/client/entity/AbstractClientPlayer.closeScreen:()V
+      12: aload_0
+      13: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      16: aconst_null
+      17: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      20: return
+
+  public void setPlayerSPHealth(float);
+    Code:
+       0: aload_0
+       1: getfield      #391                // Field hasValidHealth:Z
+       4: ifeq          87
+       7: aload_0
+       8: invokevirtual #347                // Method getHealth:()F
+      11: fload_1
+      12: fsub
+      13: fstore_2
+      14: fload_2
+      15: fconst_0
+      16: fcmpg
+      17: ifgt          44
+      20: aload_0
+      21: fload_1
+      22: invokevirtual #354                // Method setHealth:(F)V
+      25: fload_2
+      26: fconst_0
+      27: fcmpg
+      28: ifge          84
+      31: aload_0
+      32: aload_0
+      33: getfield      #394                // Field maxHurtResistantTime:I
+      36: iconst_2
+      37: idiv
+      38: putfield      #397                // Field hurtResistantTime:I
+      41: goto          84
+      44: aload_0
+      45: fload_2
+      46: putfield      #400                // Field lastDamage:F
+      49: aload_0
+      50: aload_0
+      51: invokevirtual #347                // Method getHealth:()F
+      54: invokevirtual #354                // Method setHealth:(F)V
+      57: aload_0
+      58: aload_0
+      59: getfield      #394                // Field maxHurtResistantTime:I
+      62: putfield      #397                // Field hurtResistantTime:I
+      65: aload_0
+      66: getstatic     #405                // Field net/minecraft/util/DamageSource.generic:Lnet/minecraft/util/DamageSource;
+      69: fload_2
+      70: invokevirtual #407                // Method damageEntity:(Lnet/minecraft/util/DamageSource;F)V
+      73: aload_0
+      74: aload_0
+      75: bipush        10
+      77: dup_x1
+      78: putfield      #410                // Field maxHurtTime:I
+      81: putfield      #413                // Field hurtTime:I
+      84: goto          97
+      87: aload_0
+      88: fload_1
+      89: invokevirtual #354                // Method setHealth:(F)V
+      92: aload_0
+      93: iconst_1
+      94: putfield      #391                // Field hasValidHealth:Z
+      97: return
+
+  public void sendPlayerAbilities();
+    Code:
+       0: aload_0
+       1: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+       4: new           #416                // class net/minecraft/network/play/client/C13PacketPlayerAbilities
+       7: dup
+       8: aload_0
+       9: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+      12: invokespecial #423                // Method net/minecraft/network/play/client/C13PacketPlayerAbilities."<init>":(Lnet/minecraft/entity/player/PlayerCapabilities;)V
+      15: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      18: return
+
+  public boolean isUser();
+    Code:
+       0: iconst_1
+       1: ireturn
+
+  public void sendHorseJump();
+    Code:
+       0: aload_0
+       1: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+       4: new           #30                 // class net/minecraft/network/play/client/C0BPacketEntityAction
+       7: dup
+       8: aload_0
+       9: getstatic     #428                // Field net/minecraft/network/play/client/C0BPacketEntityAction$Action.RIDING_JUMP:Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;
+      12: aload_0
+      13: invokevirtual #431                // Method getHorseJumpPower:()F
+      16: ldc_w         #432                // float 100.0f
+      19: fmul
+      20: f2i
+      21: invokespecial #435                // Method net/minecraft/network/play/client/C0BPacketEntityAction."<init>":(Lnet/minecraft/entity/Entity;Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;I)V
+      24: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      27: return
+
+  public void sendHorseInventory();
+    Code:
+       0: aload_0
+       1: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+       4: new           #30                 // class net/minecraft/network/play/client/C0BPacketEntityAction
+       7: dup
+       8: aload_0
+       9: getstatic     #439                // Field net/minecraft/network/play/client/C0BPacketEntityAction$Action.OPEN_INVENTORY:Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;
+      12: invokespecial #218                // Method net/minecraft/network/play/client/C0BPacketEntityAction."<init>":(Lnet/minecraft/entity/Entity;Lnet/minecraft/network/play/client/C0BPacketEntityAction$Action;)V
+      15: invokevirtual #182                // Method net/minecraft/client/network/NetHandlerPlayClient.addToSendQueue:(Lnet/minecraft/network/Packet;)V
+      18: return
+
+  public void setClientBrand(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #442                // Field clientBrand:Ljava/lang/String;
+       5: return
+
+  public java.lang.String getClientBrand();
+    Code:
+       0: aload_0
+       1: getfield      #442                // Field clientBrand:Ljava/lang/String;
+       4: areturn
+
+  public net.minecraft.stats.StatFileWriter getStatFileWriter();
+    Code:
+       0: aload_0
+       1: getfield      #84                 // Field statWriter:Lnet/minecraft/stats/StatFileWriter;
+       4: areturn
+
+  public void addChatComponentMessage(net.minecraft.util.IChatComponent);
+    Code:
+       0: aload_0
+       1: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+       4: getfield      #452                // Field net/minecraft/client/Minecraft.ingameGUI:Lnet/minecraft/client/gui/GuiIngame;
+       7: invokevirtual #458                // Method net/minecraft/client/gui/GuiIngame.getChatGUI:()Lnet/minecraft/client/gui/GuiNewChat;
+      10: aload_1
+      11: invokevirtual #463                // Method net/minecraft/client/gui/GuiNewChat.printChatMessage:(Lnet/minecraft/util/IChatComponent;)V
+      14: return
+
+  public boolean pushOutOfBlocks(double, double, double);
+    Code:
+       0: aload_0
+       1: getfield      #469                // Field noClip:Z
+       4: ifeq          9
+       7: iconst_0
+       8: ireturn
+       9: new           #146                // class net/minecraft/util/BlockPos
+      12: dup
+      13: dload_1
+      14: dload_3
+      15: dload         5
+      17: invokespecial #155                // Method net/minecraft/util/BlockPos."<init>":(DDD)V
+      20: astore        7
+      22: dload_1
+      23: aload         7
+      25: invokevirtual #473                // Method net/minecraft/util/BlockPos.getX:()I
+      28: i2d
+      29: dsub
+      30: dstore        8
+      32: dload         5
+      34: aload         7
+      36: invokevirtual #476                // Method net/minecraft/util/BlockPos.getZ:()I
+      39: i2d
+      40: dsub
+      41: dstore        10
+      43: aload_0
+      44: aload         7
+      46: invokespecial #479                // Method isOpenBlockSpace:(Lnet/minecraft/util/BlockPos;)Z
+      49: ifne          234
+      52: iconst_m1
+      53: istore        12
+      55: ldc2_w        #480                // double 9999.0d
+      58: dstore        13
+      60: aload_0
+      61: aload         7
+      63: invokevirtual #485                // Method net/minecraft/util/BlockPos.west:()Lnet/minecraft/util/BlockPos;
+      66: invokespecial #479                // Method isOpenBlockSpace:(Lnet/minecraft/util/BlockPos;)Z
+      69: ifeq          87
+      72: dload         8
+      74: dload         13
+      76: dcmpg
+      77: ifge          87
+      80: dload         8
+      82: dstore        13
+      84: iconst_0
+      85: istore        12
+      87: aload_0
+      88: aload         7
+      90: invokevirtual #488                // Method net/minecraft/util/BlockPos.east:()Lnet/minecraft/util/BlockPos;
+      93: invokespecial #479                // Method isOpenBlockSpace:(Lnet/minecraft/util/BlockPos;)Z
+      96: ifeq          118
+      99: dconst_1
+     100: dload         8
+     102: dsub
+     103: dload         13
+     105: dcmpg
+     106: ifge          118
+     109: dconst_1
+     110: dload         8
+     112: dsub
+     113: dstore        13
+     115: iconst_1
+     116: istore        12
+     118: aload_0
+     119: aload         7
+     121: invokevirtual #491                // Method net/minecraft/util/BlockPos.north:()Lnet/minecraft/util/BlockPos;
+     124: invokespecial #479                // Method isOpenBlockSpace:(Lnet/minecraft/util/BlockPos;)Z
+     127: ifeq          145
+     130: dload         10
+     132: dload         13
+     134: dcmpg
+     135: ifge          145
+     138: dload         10
+     140: dstore        13
+     142: iconst_4
+     143: istore        12
+     145: aload_0
+     146: aload         7
+     148: invokevirtual #494                // Method net/minecraft/util/BlockPos.south:()Lnet/minecraft/util/BlockPos;
+     151: invokespecial #479                // Method isOpenBlockSpace:(Lnet/minecraft/util/BlockPos;)Z
+     154: ifeq          176
+     157: dconst_1
+     158: dload         10
+     160: dsub
+     161: dload         13
+     163: dcmpg
+     164: ifge          176
+     167: dconst_1
+     168: dload         10
+     170: dsub
+     171: dstore        13
+     173: iconst_5
+     174: istore        12
+     176: ldc_w         #495                // float 0.1f
+     179: fstore        15
+     181: iload         12
+     183: ifne          194
+     186: aload_0
+     187: fload         15
+     189: fneg
+     190: f2d
+     191: putfield      #273                // Field motionX:D
+     194: iload         12
+     196: iconst_1
+     197: if_icmpne     207
+     200: aload_0
+     201: fload         15
+     203: f2d
+     204: putfield      #273                // Field motionX:D
+     207: iload         12
+     209: iconst_4
+     210: if_icmpne     221
+     213: aload_0
+     214: fload         15
+     216: fneg
+     217: f2d
+     218: putfield      #278                // Field motionZ:D
+     221: iload         12
+     223: iconst_5
+     224: if_icmpne     234
+     227: aload_0
+     228: fload         15
+     230: f2d
+     231: putfield      #278                // Field motionZ:D
+     234: iconst_0
+     235: ireturn
+
+  public boolean isOpenBlockSpace(net.minecraft.util.BlockPos);
+    Code:
+       0: aload_0
+       1: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+       4: aload_1
+       5: invokevirtual #499                // Method net/minecraft/world/World.getBlockState:(Lnet/minecraft/util/BlockPos;)Lnet/minecraft/block/state/IBlockState;
+       8: invokeinterface #505,  1          // InterfaceMethod net/minecraft/block/state/IBlockState.getBlock:()Lnet/minecraft/block/Block;
+      13: invokevirtual #510                // Method net/minecraft/block/Block.isNormalCube:()Z
+      16: ifne          45
+      19: aload_0
+      20: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+      23: aload_1
+      24: invokevirtual #513                // Method net/minecraft/util/BlockPos.up:()Lnet/minecraft/util/BlockPos;
+      27: invokevirtual #499                // Method net/minecraft/world/World.getBlockState:(Lnet/minecraft/util/BlockPos;)Lnet/minecraft/block/state/IBlockState;
+      30: invokeinterface #505,  1          // InterfaceMethod net/minecraft/block/state/IBlockState.getBlock:()Lnet/minecraft/block/Block;
+      35: invokevirtual #510                // Method net/minecraft/block/Block.isNormalCube:()Z
+      38: ifne          45
+      41: iconst_1
+      42: goto          46
+      45: iconst_0
+      46: ireturn
+
+  public void setSprinting(boolean);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokespecial #516                // Method net/minecraft/client/entity/AbstractClientPlayer.setSprinting:(Z)V
+       5: aload_0
+       6: iload_1
+       7: ifeq          16
+      10: sipush        600
+      13: goto          17
+      16: iconst_0
+      17: putfield      #518                // Field sprintingTicksLeft:I
+      20: return
+
+  public void setXPStats(float, int, int);
+    Code:
+       0: aload_0
+       1: fload_1
+       2: putfield      #523                // Field experience:F
+       5: aload_0
+       6: iload_2
+       7: putfield      #526                // Field experienceTotal:I
+      10: aload_0
+      11: iload_3
+      12: putfield      #529                // Field experienceLevel:I
+      15: return
+
+  public void addChatMessage(net.minecraft.util.IChatComponent);
+    Code:
+       0: aload_0
+       1: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+       4: getfield      #452                // Field net/minecraft/client/Minecraft.ingameGUI:Lnet/minecraft/client/gui/GuiIngame;
+       7: invokevirtual #458                // Method net/minecraft/client/gui/GuiIngame.getChatGUI:()Lnet/minecraft/client/gui/GuiNewChat;
+      10: aload_1
+      11: invokevirtual #463                // Method net/minecraft/client/gui/GuiNewChat.printChatMessage:(Lnet/minecraft/util/IChatComponent;)V
+      14: return
+
+  public boolean canCommandSenderUseCommand(int, java.lang.String);
+    Code:
+       0: iload_1
+       1: ifgt          8
+       4: iconst_1
+       5: goto          9
+       8: iconst_0
+       9: ireturn
+
+  public net.minecraft.util.BlockPos getPosition();
+    Code:
+       0: new           #146                // class net/minecraft/util/BlockPos
+       3: dup
+       4: aload_0
+       5: getfield      #149                // Field posX:D
+       8: ldc2_w        #534                // double 0.5d
+      11: dadd
+      12: aload_0
+      13: getfield      #538                // Field posY:D
+      16: ldc2_w        #534                // double 0.5d
+      19: dadd
+      20: aload_0
+      21: getfield      #152                // Field posZ:D
+      24: ldc2_w        #534                // double 0.5d
+      27: dadd
+      28: invokespecial #155                // Method net/minecraft/util/BlockPos."<init>":(DDD)V
+      31: areturn
+
+  public void playSound(java.lang.String, float, float);
+    Code:
+       0: aload_0
+       1: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+       4: aload_0
+       5: getfield      #149                // Field posX:D
+       8: aload_0
+       9: getfield      #538                // Field posY:D
+      12: aload_0
+      13: getfield      #152                // Field posZ:D
+      16: aload_1
+      17: fload_2
+      18: fload_3
+      19: iconst_0
+      20: invokevirtual #542                // Method net/minecraft/world/World.playSound:(DDDLjava/lang/String;FFZ)V
+      23: return
+
+  public boolean isServerWorld();
+    Code:
+       0: iconst_1
+       1: ireturn
+
+  public boolean isRidingHorse();
+    Code:
+       0: aload_0
+       1: getfield      #261                // Field ridingEntity:Lnet/minecraft/entity/Entity;
+       4: ifnull        34
+       7: aload_0
+       8: getfield      #261                // Field ridingEntity:Lnet/minecraft/entity/Entity;
+      11: instanceof    #546                // class net/minecraft/entity/passive/EntityHorse
+      14: ifeq          34
+      17: aload_0
+      18: getfield      #261                // Field ridingEntity:Lnet/minecraft/entity/Entity;
+      21: checkcast     #546                // class net/minecraft/entity/passive/EntityHorse
+      24: invokevirtual #549                // Method net/minecraft/entity/passive/EntityHorse.isHorseSaddled:()Z
+      27: ifeq          34
+      30: iconst_1
+      31: goto          35
+      34: iconst_0
+      35: ireturn
+
+  public float getHorseJumpPower();
+    Code:
+       0: aload_0
+       1: getfield      #551                // Field horseJumpPower:F
+       4: freturn
+
+  public void openEditSign(net.minecraft.tileentity.TileEntitySign);
+    Code:
+       0: aload_0
+       1: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+       4: new           #555                // class net/minecraft/client/gui/inventory/GuiEditSign
+       7: dup
+       8: aload_1
+       9: invokespecial #557                // Method net/minecraft/client/gui/inventory/GuiEditSign."<init>":(Lnet/minecraft/tileentity/TileEntitySign;)V
+      12: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      15: return
+
+  public void openEditCommandBlock(net.minecraft.command.server.CommandBlockLogic);
+    Code:
+       0: aload_0
+       1: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+       4: new           #562                // class net/minecraft/client/gui/GuiCommandBlock
+       7: dup
+       8: aload_1
+       9: invokespecial #564                // Method net/minecraft/client/gui/GuiCommandBlock."<init>":(Lnet/minecraft/command/server/CommandBlockLogic;)V
+      12: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      15: return
+
+  public void displayGUIBook(net.minecraft.item.ItemStack);
+    Code:
+       0: aload_1
+       1: invokevirtual #572                // Method net/minecraft/item/ItemStack.getItem:()Lnet/minecraft/item/Item;
+       4: astore_2
+       5: aload_2
+       6: getstatic     #578                // Field net/minecraft/init/Items.writable_book:Lnet/minecraft/item/Item;
+       9: if_acmpne     29
+      12: aload_0
+      13: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      16: new           #580                // class net/minecraft/client/gui/GuiScreenBook
+      19: dup
+      20: aload_0
+      21: aload_1
+      22: iconst_1
+      23: invokespecial #583                // Method net/minecraft/client/gui/GuiScreenBook."<init>":(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/item/ItemStack;Z)V
+      26: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      29: return
+
+  public void displayGUIChest(net.minecraft.inventory.IInventory);
+    Code:
+       0: aload_1
+       1: instanceof    #590                // class net/minecraft/world/IInteractionObject
+       4: ifeq          19
+       7: aload_1
+       8: checkcast     #590                // class net/minecraft/world/IInteractionObject
+      11: invokeinterface #593,  1          // InterfaceMethod net/minecraft/world/IInteractionObject.getGuiID:()Ljava/lang/String;
+      16: goto          22
+      19: ldc_w         #595                // String minecraft:container
+      22: astore_2
+      23: ldc_w         #597                // String minecraft:chest
+      26: aload_2
+      27: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      30: ifeq          55
+      33: aload_0
+      34: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      37: new           #605                // class net/minecraft/client/gui/inventory/GuiChest
+      40: dup
+      41: aload_0
+      42: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+      45: aload_1
+      46: invokespecial #608                // Method net/minecraft/client/gui/inventory/GuiChest."<init>":(Lnet/minecraft/inventory/IInventory;Lnet/minecraft/inventory/IInventory;)V
+      49: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      52: goto          244
+      55: ldc_w         #610                // String minecraft:hopper
+      58: aload_2
+      59: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      62: ifeq          87
+      65: aload_0
+      66: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      69: new           #612                // class net/minecraft/client/gui/GuiHopper
+      72: dup
+      73: aload_0
+      74: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+      77: aload_1
+      78: invokespecial #615                // Method net/minecraft/client/gui/GuiHopper."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/inventory/IInventory;)V
+      81: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      84: goto          244
+      87: ldc_w         #617                // String minecraft:furnace
+      90: aload_2
+      91: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      94: ifeq          119
+      97: aload_0
+      98: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     101: new           #619                // class net/minecraft/client/gui/inventory/GuiFurnace
+     104: dup
+     105: aload_0
+     106: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+     109: aload_1
+     110: invokespecial #620                // Method net/minecraft/client/gui/inventory/GuiFurnace."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/inventory/IInventory;)V
+     113: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+     116: goto          244
+     119: ldc_w         #622                // String minecraft:brewing_stand
+     122: aload_2
+     123: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     126: ifeq          151
+     129: aload_0
+     130: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     133: new           #624                // class net/minecraft/client/gui/inventory/GuiBrewingStand
+     136: dup
+     137: aload_0
+     138: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+     141: aload_1
+     142: invokespecial #625                // Method net/minecraft/client/gui/inventory/GuiBrewingStand."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/inventory/IInventory;)V
+     145: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+     148: goto          244
+     151: ldc_w         #627                // String minecraft:beacon
+     154: aload_2
+     155: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     158: ifeq          183
+     161: aload_0
+     162: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     165: new           #629                // class net/minecraft/client/gui/inventory/GuiBeacon
+     168: dup
+     169: aload_0
+     170: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+     173: aload_1
+     174: invokespecial #630                // Method net/minecraft/client/gui/inventory/GuiBeacon."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/inventory/IInventory;)V
+     177: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+     180: goto          244
+     183: ldc_w         #632                // String minecraft:dispenser
+     186: aload_2
+     187: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     190: ifne          203
+     193: ldc_w         #634                // String minecraft:dropper
+     196: aload_2
+     197: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     200: ifeq          225
+     203: aload_0
+     204: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     207: new           #636                // class net/minecraft/client/gui/inventory/GuiDispenser
+     210: dup
+     211: aload_0
+     212: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+     215: aload_1
+     216: invokespecial #637                // Method net/minecraft/client/gui/inventory/GuiDispenser."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/inventory/IInventory;)V
+     219: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+     222: goto          244
+     225: aload_0
+     226: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     229: new           #605                // class net/minecraft/client/gui/inventory/GuiChest
+     232: dup
+     233: aload_0
+     234: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+     237: aload_1
+     238: invokespecial #608                // Method net/minecraft/client/gui/inventory/GuiChest."<init>":(Lnet/minecraft/inventory/IInventory;Lnet/minecraft/inventory/IInventory;)V
+     241: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+     244: return
+
+  public void displayGUIHorse(net.minecraft.entity.passive.EntityHorse, net.minecraft.inventory.IInventory);
+    Code:
+       0: aload_0
+       1: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+       4: new           #642                // class net/minecraft/client/gui/inventory/GuiScreenHorseInventory
+       7: dup
+       8: aload_0
+       9: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+      12: aload_2
+      13: aload_1
+      14: invokespecial #645                // Method net/minecraft/client/gui/inventory/GuiScreenHorseInventory."<init>":(Lnet/minecraft/inventory/IInventory;Lnet/minecraft/inventory/IInventory;Lnet/minecraft/entity/passive/EntityHorse;)V
+      17: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      20: return
+
+  public void displayGui(net.minecraft.world.IInteractionObject);
+    Code:
+       0: aload_1
+       1: invokeinterface #593,  1          // InterfaceMethod net/minecraft/world/IInteractionObject.getGuiID:()Ljava/lang/String;
+       6: astore_2
+       7: ldc_w         #650                // String minecraft:crafting_table
+      10: aload_2
+      11: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      14: ifeq          42
+      17: aload_0
+      18: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      21: new           #652                // class net/minecraft/client/gui/inventory/GuiCrafting
+      24: dup
+      25: aload_0
+      26: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+      29: aload_0
+      30: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+      33: invokespecial #655                // Method net/minecraft/client/gui/inventory/GuiCrafting."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/world/World;)V
+      36: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      39: goto          110
+      42: ldc_w         #657                // String minecraft:enchanting_table
+      45: aload_2
+      46: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      49: ifeq          78
+      52: aload_0
+      53: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      56: new           #659                // class net/minecraft/client/gui/GuiEnchantment
+      59: dup
+      60: aload_0
+      61: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+      64: aload_0
+      65: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+      68: aload_1
+      69: invokespecial #662                // Method net/minecraft/client/gui/GuiEnchantment."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/world/World;Lnet/minecraft/world/IWorldNameable;)V
+      72: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      75: goto          110
+      78: ldc_w         #664                // String minecraft:anvil
+      81: aload_2
+      82: invokevirtual #603                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      85: ifeq          110
+      88: aload_0
+      89: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      92: new           #666                // class net/minecraft/client/gui/GuiRepair
+      95: dup
+      96: aload_0
+      97: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+     100: aload_0
+     101: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+     104: invokespecial #667                // Method net/minecraft/client/gui/GuiRepair."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/world/World;)V
+     107: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+     110: return
+
+  public void displayVillagerTradeGui(net.minecraft.entity.IMerchant);
+    Code:
+       0: aload_0
+       1: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+       4: new           #672                // class net/minecraft/client/gui/GuiMerchant
+       7: dup
+       8: aload_0
+       9: getfield      #376                // Field inventory:Lnet/minecraft/entity/player/InventoryPlayer;
+      12: aload_1
+      13: aload_0
+      14: getfield      #144                // Field worldObj:Lnet/minecraft/world/World;
+      17: invokespecial #675                // Method net/minecraft/client/gui/GuiMerchant."<init>":(Lnet/minecraft/entity/player/InventoryPlayer;Lnet/minecraft/entity/IMerchant;Lnet/minecraft/world/World;)V
+      20: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+      23: return
+
+  public void onCriticalHit(net.minecraft.entity.Entity);
+    Code:
+       0: new           #311                // class org/spongepowered/asm/mixin/injection/callback/CallbackInfo
+       3: dup
+       4: ldc_w         #678                // String onCriticalHit
+       7: iconst_1
+       8: invokespecial #313                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo."<init>":(Ljava/lang/String;Z)V
+      11: astore_2
+      12: aload_0
+      13: aload_1
+      14: aload_2
+      15: invokevirtual #682                // Method handler$zhl000$lunar$criticalStrikeEvent:(Lnet/minecraft/entity/Entity;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V
+      18: aload_2
+      19: invokevirtual #318                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo.isCancelled:()Z
+      22: ifeq          26
+      25: return
+      26: aload_0
+      27: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      30: getfield      #686                // Field net/minecraft/client/Minecraft.effectRenderer:Lnet/minecraft/client/particle/EffectRenderer;
+      33: aload_1
+      34: getstatic     #692                // Field net/minecraft/util/EnumParticleTypes.CRIT:Lnet/minecraft/util/EnumParticleTypes;
+      37: invokevirtual #698                // Method net/minecraft/client/particle/EffectRenderer.emitParticleAtEntity:(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/EnumParticleTypes;)V
+      40: return
+
+  public void onEnchantmentCritical(net.minecraft.entity.Entity);
+    Code:
+       0: new           #311                // class org/spongepowered/asm/mixin/injection/callback/CallbackInfo
+       3: dup
+       4: ldc_w         #700                // String onEnchantmentCritical
+       7: iconst_1
+       8: invokespecial #313                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo."<init>":(Ljava/lang/String;Z)V
+      11: astore_2
+      12: aload_0
+      13: aload_1
+      14: aload_2
+      15: invokevirtual #703                // Method handler$zhl000$lunar$enchantCriticalStrikeEvent:(Lnet/minecraft/entity/Entity;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V
+      18: aload_2
+      19: invokevirtual #318                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo.isCancelled:()Z
+      22: ifeq          26
+      25: return
+      26: aload_0
+      27: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      30: getfield      #686                // Field net/minecraft/client/Minecraft.effectRenderer:Lnet/minecraft/client/particle/EffectRenderer;
+      33: aload_1
+      34: getstatic     #706                // Field net/minecraft/util/EnumParticleTypes.CRIT_MAGIC:Lnet/minecraft/util/EnumParticleTypes;
+      37: invokevirtual #698                // Method net/minecraft/client/particle/EffectRenderer.emitParticleAtEntity:(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/EnumParticleTypes;)V
+      40: return
+
+  public boolean isSneaking();
+    Code:
+       0: aload_0
+       1: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+       4: ifnull        17
+       7: aload_0
+       8: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+      11: getfield      #200                // Field net/minecraft/util/MovementInput.sneak:Z
+      14: goto          18
+      17: iconst_0
+      18: istore_1
+      19: iload_1
+      20: ifeq          34
+      23: aload_0
+      24: getfield      #709                // Field sleeping:Z
+      27: ifne          34
+      30: iconst_1
+      31: goto          35
+      34: iconst_0
+      35: ireturn
+
+  public void updateEntityActionState();
+    Code:
+       0: aload_0
+       1: invokespecial #712                // Method net/minecraft/client/entity/AbstractClientPlayer.updateEntityActionState:()V
+       4: aload_0
+       5: invokevirtual #235                // Method isCurrentViewEntity:()Z
+       8: ifeq          110
+      11: aload_0
+      12: aload_0
+      13: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+      16: getfield      #715                // Field net/minecraft/util/MovementInput.moveStrafe:F
+      19: putfield      #187                // Field moveStrafing:F
+      22: aload_0
+      23: aload_0
+      24: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+      27: getfield      #716                // Field net/minecraft/util/MovementInput.moveForward:F
+      30: putfield      #190                // Field moveForward:F
+      33: aload_0
+      34: aload_0
+      35: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+      38: getfield      #197                // Field net/minecraft/util/MovementInput.jump:Z
+      41: putfield      #719                // Field isJumping:Z
+      44: aload_0
+      45: aload_0
+      46: getfield      #721                // Field renderArmYaw:F
+      49: putfield      #723                // Field prevRenderArmYaw:F
+      52: aload_0
+      53: aload_0
+      54: getfield      #725                // Field renderArmPitch:F
+      57: putfield      #727                // Field prevRenderArmPitch:F
+      60: aload_0
+      61: dup
+      62: getfield      #725                // Field renderArmPitch:F
+      65: f2d
+      66: aload_0
+      67: getfield      #172                // Field rotationPitch:F
+      70: aload_0
+      71: getfield      #725                // Field renderArmPitch:F
+      74: fsub
+      75: f2d
+      76: ldc2_w        #534                // double 0.5d
+      79: dmul
+      80: dadd
+      81: d2f
+      82: putfield      #725                // Field renderArmPitch:F
+      85: aload_0
+      86: dup
+      87: getfield      #721                // Field renderArmYaw:F
+      90: f2d
+      91: aload_0
+      92: getfield      #169                // Field rotationYaw:F
+      95: aload_0
+      96: getfield      #721                // Field renderArmYaw:F
+      99: fsub
+     100: f2d
+     101: ldc2_w        #534                // double 0.5d
+     104: dmul
+     105: dadd
+     106: d2f
+     107: putfield      #721                // Field renderArmYaw:F
+     110: return
+
+  public boolean isCurrentViewEntity();
+    Code:
+       0: new           #97                 // class org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable
+       3: dup
+       4: ldc_w         #728                // String isCurrentViewEntity
+       7: iconst_1
+       8: invokespecial #101                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable."<init>":(Ljava/lang/String;Z)V
+      11: astore_1
+      12: aload_0
+      13: aload_1
+      14: invokevirtual #732                // Method handler$zhl000$lunar$rewindFixPlayerAnimations:(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V
+      17: aload_1
+      18: invokevirtual #109                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable.isCancelled:()Z
+      21: ifeq          29
+      24: aload_1
+      25: invokevirtual #112                // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable.getReturnValueZ:()Z
+      28: ireturn
+      29: aload_0
+      30: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      33: invokevirtual #736                // Method net/minecraft/client/Minecraft.getRenderViewEntity:()Lnet/minecraft/entity/Entity;
+      36: aload_0
+      37: if_acmpne     44
+      40: iconst_1
+      41: goto          45
+      44: iconst_0
+      45: ireturn
+
+  public void onLivingUpdate();
+    Code:
+       0: aload_0
+       1: aconst_null
+       2: invokevirtual #741                // Method handler$zhl000$lunar$livingUpdateEvent:(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V
+       5: aload_0
+       6: getfield      #518                // Field sprintingTicksLeft:I
+       9: ifle          43
+      12: aload_0
+      13: dup
+      14: getfield      #518                // Field sprintingTicksLeft:I
+      17: iconst_1
+      18: isub
+      19: putfield      #518                // Field sprintingTicksLeft:I
+      22: aload_0
+      23: getfield      #518                // Field sprintingTicksLeft:I
+      26: ifne          43
+      29: aload_0
+      30: iconst_0
+      31: istore        7
+      33: astore        6
+      35: aload_0
+      36: aload         6
+      38: iload         7
+      40: invokevirtual #745                // Method redirect$zhl000$lunar$onSprinting:(Lnet/minecraft/client/entity/EntityPlayerSP;Z)V
+      43: aload_0
+      44: getfield      #747                // Field sprintToggleTimer:I
+      47: ifle          60
+      50: aload_0
+      51: dup
+      52: getfield      #747                // Field sprintToggleTimer:I
+      55: iconst_1
+      56: isub
+      57: putfield      #747                // Field sprintToggleTimer:I
+      60: aload_0
+      61: aload_0
+      62: getfield      #749                // Field timeInPortal:F
+      65: putfield      #751                // Field prevTimeInPortal:F
+      68: aload_0
+      69: getfield      #754                // Field inPortal:Z
+      72: ifeq          209
+      75: aload_0
+      76: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      79: getfield      #758                // Field net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/GuiScreen;
+      82: ifnull        128
+      85: aload_0
+      86: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+      89: getfield      #758                // Field net/minecraft/client/Minecraft.currentScreen:Lnet/minecraft/client/gui/GuiScreen;
+      92: invokevirtual #763                // Method net/minecraft/client/gui/GuiScreen.doesGuiPauseGame:()Z
+      95: ifne          128
+      98: aload_0
+      99: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     102: aconst_null
+     103: astore        7
+     105: astore        6
+     107: aload_0
+     108: aload         6
+     110: aload         7
+     112: invokevirtual #767                // Method wrapWithCondition$zhl000$apollo$handleAntiPortalTraps:(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/GuiScreen;)Z
+     115: ifeq          128
+     118: aload         6
+     120: aload         7
+     122: invokevirtual #388                // Method net/minecraft/client/Minecraft.displayGuiScreen:(Lnet/minecraft/client/gui/GuiScreen;)V
+     125: goto          128
+     128: aload_0
+     129: getfield      #749                // Field timeInPortal:F
+     132: fconst_0
+     133: fcmpl
+     134: ifne          175
+     137: aload_0
+     138: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     141: invokevirtual #127                // Method net/minecraft/client/Minecraft.getSoundHandler:()Lnet/minecraft/client/audio/SoundHandler;
+     144: new           #769                // class net/minecraft/util/ResourceLocation
+     147: dup
+     148: ldc_w         #771                // String portal.trigger
+     151: invokespecial #772                // Method net/minecraft/util/ResourceLocation."<init>":(Ljava/lang/String;)V
+     154: aload_0
+     155: getfield      #776                // Field rand:Ljava/util/Random;
+     158: invokevirtual #781                // Method java/util/Random.nextFloat:()F
+     161: ldc_w         #782                // float 0.4f
+     164: fmul
+     165: ldc_w         #783                // float 0.8f
+     168: fadd
+     169: invokestatic  #789                // Method net/minecraft/client/audio/PositionedSoundRecord.create:(Lnet/minecraft/util/ResourceLocation;F)Lnet/minecraft/client/audio/PositionedSoundRecord;
+     172: invokevirtual #138                // Method net/minecraft/client/audio/SoundHandler.playSound:(Lnet/minecraft/client/audio/ISound;)V
+     175: aload_0
+     176: dup
+     177: getfield      #749                // Field timeInPortal:F
+     180: ldc_w         #790                // float 0.0125f
+     183: fadd
+     184: putfield      #749                // Field timeInPortal:F
+     187: aload_0
+     188: getfield      #749                // Field timeInPortal:F
+     191: fconst_1
+     192: fcmpl
+     193: iflt          201
+     196: aload_0
+     197: fconst_1
+     198: putfield      #749                // Field timeInPortal:F
+     201: aload_0
+     202: iconst_0
+     203: putfield      #754                // Field inPortal:Z
+     206: goto          298
+     209: aload_0
+     210: getstatic     #796                // Field net/minecraft/potion/Potion.confusion:Lnet/minecraft/potion/Potion;
+     213: invokevirtual #800                // Method isPotionActive:(Lnet/minecraft/potion/Potion;)Z
+     216: ifeq          263
+     219: aload_0
+     220: getstatic     #796                // Field net/minecraft/potion/Potion.confusion:Lnet/minecraft/potion/Potion;
+     223: invokevirtual #804                // Method getActivePotionEffect:(Lnet/minecraft/potion/Potion;)Lnet/minecraft/potion/PotionEffect;
+     226: invokevirtual #809                // Method net/minecraft/potion/PotionEffect.getDuration:()I
+     229: bipush        60
+     231: if_icmple     263
+     234: aload_0
+     235: dup
+     236: getfield      #749                // Field timeInPortal:F
+     239: ldc_w         #810                // float 0.006666667f
+     242: fadd
+     243: putfield      #749                // Field timeInPortal:F
+     246: aload_0
+     247: getfield      #749                // Field timeInPortal:F
+     250: fconst_1
+     251: fcmpl
+     252: ifle          298
+     255: aload_0
+     256: fconst_1
+     257: putfield      #749                // Field timeInPortal:F
+     260: goto          298
+     263: aload_0
+     264: getfield      #749                // Field timeInPortal:F
+     267: fconst_0
+     268: fcmpl
+     269: ifle          284
+     272: aload_0
+     273: dup
+     274: getfield      #749                // Field timeInPortal:F
+     277: ldc_w         #811                // float 0.05f
+     280: fsub
+     281: putfield      #749                // Field timeInPortal:F
+     284: aload_0
+     285: getfield      #749                // Field timeInPortal:F
+     288: fconst_0
+     289: fcmpg
+     290: ifge          298
+     293: aload_0
+     294: fconst_0
+     295: putfield      #749                // Field timeInPortal:F
+     298: aload_0
+     299: getfield      #814                // Field timeUntilPortal:I
+     302: ifle          315
+     305: aload_0
+     306: dup
+     307: getfield      #814                // Field timeUntilPortal:I
+     310: iconst_1
+     311: isub
+     312: putfield      #814                // Field timeUntilPortal:I
+     315: aload_0
+     316: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     319: getfield      #197                // Field net/minecraft/util/MovementInput.jump:Z
+     322: istore_1
+     323: aload_0
+     324: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     327: getfield      #200                // Field net/minecraft/util/MovementInput.sneak:Z
+     330: istore_2
+     331: ldc_w         #783                // float 0.8f
+     334: fstore_3
+     335: aload_0
+     336: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     339: getfield      #716                // Field net/minecraft/util/MovementInput.moveForward:F
+     342: fload_3
+     343: fcmpl
+     344: iflt          351
+     347: iconst_1
+     348: goto          352
+     351: iconst_0
+     352: istore        4
+     354: aload_0
+     355: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     358: invokevirtual #817                // Method net/minecraft/util/MovementInput.updatePlayerMoveState:()V
+     361: aload_0
+     362: invokevirtual #820                // Method isUsingItem:()Z
+     365: ifeq          410
+     368: aload_0
+     369: invokevirtual #166                // Method isRiding:()Z
+     372: ifne          410
+     375: aload_0
+     376: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     379: dup
+     380: getfield      #715                // Field net/minecraft/util/MovementInput.moveStrafe:F
+     383: ldc_w         #821                // float 0.2f
+     386: fmul
+     387: putfield      #715                // Field net/minecraft/util/MovementInput.moveStrafe:F
+     390: aload_0
+     391: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     394: dup
+     395: getfield      #716                // Field net/minecraft/util/MovementInput.moveForward:F
+     398: ldc_w         #821                // float 0.2f
+     401: fmul
+     402: putfield      #716                // Field net/minecraft/util/MovementInput.moveForward:F
+     405: aload_0
+     406: iconst_0
+     407: putfield      #747                // Field sprintToggleTimer:I
+     410: aload_0
+     411: aload_0
+     412: getfield      #149                // Field posX:D
+     415: aload_0
+     416: getfield      #824                // Field width:F
+     419: f2d
+     420: ldc2_w        #825                // double 0.35d
+     423: dmul
+     424: dsub
+     425: aload_0
+     426: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     429: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     432: ldc2_w        #534                // double 0.5d
+     435: dadd
+     436: aload_0
+     437: getfield      #152                // Field posZ:D
+     440: aload_0
+     441: getfield      #824                // Field width:F
+     444: f2d
+     445: ldc2_w        #825                // double 0.35d
+     448: dmul
+     449: dadd
+     450: invokevirtual #828                // Method pushOutOfBlocks:(DDD)Z
+     453: pop
+     454: aload_0
+     455: aload_0
+     456: getfield      #149                // Field posX:D
+     459: aload_0
+     460: getfield      #824                // Field width:F
+     463: f2d
+     464: ldc2_w        #825                // double 0.35d
+     467: dmul
+     468: dsub
+     469: aload_0
+     470: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     473: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     476: ldc2_w        #534                // double 0.5d
+     479: dadd
+     480: aload_0
+     481: getfield      #152                // Field posZ:D
+     484: aload_0
+     485: getfield      #824                // Field width:F
+     488: f2d
+     489: ldc2_w        #825                // double 0.35d
+     492: dmul
+     493: dsub
+     494: invokevirtual #828                // Method pushOutOfBlocks:(DDD)Z
+     497: pop
+     498: aload_0
+     499: aload_0
+     500: getfield      #149                // Field posX:D
+     503: aload_0
+     504: getfield      #824                // Field width:F
+     507: f2d
+     508: ldc2_w        #825                // double 0.35d
+     511: dmul
+     512: dadd
+     513: aload_0
+     514: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     517: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     520: ldc2_w        #534                // double 0.5d
+     523: dadd
+     524: aload_0
+     525: getfield      #152                // Field posZ:D
+     528: aload_0
+     529: getfield      #824                // Field width:F
+     532: f2d
+     533: ldc2_w        #825                // double 0.35d
+     536: dmul
+     537: dsub
+     538: invokevirtual #828                // Method pushOutOfBlocks:(DDD)Z
+     541: pop
+     542: aload_0
+     543: aload_0
+     544: getfield      #149                // Field posX:D
+     547: aload_0
+     548: getfield      #824                // Field width:F
+     551: f2d
+     552: ldc2_w        #825                // double 0.35d
+     555: dmul
+     556: dadd
+     557: aload_0
+     558: invokevirtual #241                // Method getEntityBoundingBox:()Lnet/minecraft/util/AxisAlignedBB;
+     561: getfield      #246                // Field net/minecraft/util/AxisAlignedBB.minY:D
+     564: ldc2_w        #534                // double 0.5d
+     567: dadd
+     568: aload_0
+     569: getfield      #152                // Field posZ:D
+     572: aload_0
+     573: getfield      #824                // Field width:F
+     576: f2d
+     577: ldc2_w        #825                // double 0.35d
+     580: dmul
+     581: dadd
+     582: invokevirtual #828                // Method pushOutOfBlocks:(DDD)Z
+     585: pop
+     586: aload_0
+     587: invokevirtual #832                // Method getFoodStats:()Lnet/minecraft/util/FoodStats;
+     590: invokevirtual #837                // Method net/minecraft/util/FoodStats.getFoodLevel:()I
+     593: i2f
+     594: ldc_w         #838                // float 6.0f
+     597: fcmpl
+     598: ifgt          611
+     601: aload_0
+     602: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     605: getfield      #843                // Field net/minecraft/entity/player/PlayerCapabilities.allowFlying:Z
+     608: ifeq          615
+     611: iconst_1
+     612: goto          616
+     615: iconst_0
+     616: istore        5
+     618: aload_0
+     619: getfield      #175                // Field onGround:Z
+     622: ifeq          722
+     625: iload_2
+     626: ifne          722
+     629: iload         4
+     631: ifne          722
+     634: aload_0
+     635: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     638: getfield      #716                // Field net/minecraft/util/MovementInput.moveForward:F
+     641: fload_3
+     642: fcmpl
+     643: iflt          722
+     646: aload_0
+     647: invokevirtual #209                // Method isSprinting:()Z
+     650: ifne          722
+     653: iload         5
+     655: ifeq          722
+     658: aload_0
+     659: invokevirtual #820                // Method isUsingItem:()Z
+     662: ifne          722
+     665: aload_0
+     666: getstatic     #846                // Field net/minecraft/potion/Potion.blindness:Lnet/minecraft/potion/Potion;
+     669: invokevirtual #800                // Method isPotionActive:(Lnet/minecraft/potion/Potion;)Z
+     672: ifne          722
+     675: aload_0
+     676: getfield      #747                // Field sprintToggleTimer:I
+     679: ifgt          708
+     682: aload_0
+     683: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     686: getfield      #850                // Field net/minecraft/client/Minecraft.gameSettings:Lnet/minecraft/client/settings/GameSettings;
+     689: getfield      #856                // Field net/minecraft/client/settings/GameSettings.keyBindSprint:Lnet/minecraft/client/settings/KeyBinding;
+     692: astore        6
+     694: aload_0
+     695: aload         6
+     697: invokedynamic #875,  0            // InvokeDynamic #0:call:()Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;
+     702: invokevirtual #879                // Method wrapOperation$zhl000$lunar$rewindIgnoreSprintKey:(Lnet/minecraft/client/settings/KeyBinding;Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;)Z
+     705: ifeq          716
+     708: aload_0
+     709: iconst_1
+     710: invokevirtual #880                // Method setSprinting:(Z)V
+     713: goto          722
+     716: aload_0
+     717: bipush        7
+     719: putfield      #747                // Field sprintToggleTimer:I
+     722: aload_0
+     723: invokevirtual #209                // Method isSprinting:()Z
+     726: ifne          794
+     729: aload_0
+     730: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     733: getfield      #716                // Field net/minecraft/util/MovementInput.moveForward:F
+     736: fload_3
+     737: fcmpl
+     738: iflt          794
+     741: iload         5
+     743: ifeq          794
+     746: aload_0
+     747: invokevirtual #820                // Method isUsingItem:()Z
+     750: ifne          794
+     753: aload_0
+     754: getstatic     #846                // Field net/minecraft/potion/Potion.blindness:Lnet/minecraft/potion/Potion;
+     757: invokevirtual #800                // Method isPotionActive:(Lnet/minecraft/potion/Potion;)Z
+     760: ifne          794
+     763: aload_0
+     764: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     767: getfield      #850                // Field net/minecraft/client/Minecraft.gameSettings:Lnet/minecraft/client/settings/GameSettings;
+     770: getfield      #856                // Field net/minecraft/client/settings/GameSettings.keyBindSprint:Lnet/minecraft/client/settings/KeyBinding;
+     773: astore        6
+     775: aload_0
+     776: aload         6
+     778: invokedynamic #885,  0            // InvokeDynamic #1:call:()Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;
+     783: invokevirtual #879                // Method wrapOperation$zhl000$lunar$rewindIgnoreSprintKey:(Lnet/minecraft/client/settings/KeyBinding;Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;)Z
+     786: ifeq          794
+     789: aload_0
+     790: iconst_1
+     791: invokevirtual #880                // Method setSprinting:(Z)V
+     794: aload_0
+     795: invokevirtual #209                // Method isSprinting:()Z
+     798: ifeq          830
+     801: aload_0
+     802: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     805: getfield      #716                // Field net/minecraft/util/MovementInput.moveForward:F
+     808: fload_3
+     809: fcmpg
+     810: iflt          825
+     813: aload_0
+     814: getfield      #888                // Field isCollidedHorizontally:Z
+     817: ifne          825
+     820: iload         5
+     822: ifne          830
+     825: aload_0
+     826: iconst_0
+     827: invokevirtual #880                // Method setSprinting:(Z)V
+     830: aload_0
+     831: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     834: getfield      #843                // Field net/minecraft/entity/player/PlayerCapabilities.allowFlying:Z
+     837: ifeq          939
+     840: aload_0
+     841: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+     844: getfield      #892                // Field net/minecraft/client/Minecraft.playerController:Lnet/minecraft/client/multiplayer/PlayerControllerMP;
+     847: invokevirtual #897                // Method net/minecraft/client/multiplayer/PlayerControllerMP.isSpectatorMode:()Z
+     850: ifeq          878
+     853: aload_0
+     854: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     857: getfield      #900                // Field net/minecraft/entity/player/PlayerCapabilities.isFlying:Z
+     860: ifne          939
+     863: aload_0
+     864: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     867: iconst_1
+     868: putfield      #900                // Field net/minecraft/entity/player/PlayerCapabilities.isFlying:Z
+     871: aload_0
+     872: invokevirtual #902                // Method sendPlayerAbilities:()V
+     875: goto          939
+     878: iload_1
+     879: ifne          939
+     882: aload_0
+     883: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     886: getfield      #197                // Field net/minecraft/util/MovementInput.jump:Z
+     889: ifeq          939
+     892: aload_0
+     893: getfield      #905                // Field flyToggleTimer:I
+     896: ifne          908
+     899: aload_0
+     900: bipush        7
+     902: putfield      #905                // Field flyToggleTimer:I
+     905: goto          939
+     908: aload_0
+     909: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     912: aload_0
+     913: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     916: getfield      #900                // Field net/minecraft/entity/player/PlayerCapabilities.isFlying:Z
+     919: ifne          926
+     922: iconst_1
+     923: goto          927
+     926: iconst_0
+     927: putfield      #900                // Field net/minecraft/entity/player/PlayerCapabilities.isFlying:Z
+     930: aload_0
+     931: invokevirtual #902                // Method sendPlayerAbilities:()V
+     934: aload_0
+     935: iconst_0
+     936: putfield      #905                // Field flyToggleTimer:I
+     939: aload_0
+     940: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     943: getfield      #900                // Field net/minecraft/entity/player/PlayerCapabilities.isFlying:Z
+     946: ifeq          1018
+     949: aload_0
+     950: invokevirtual #235                // Method isCurrentViewEntity:()Z
+     953: ifeq          1018
+     956: aload_0
+     957: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     960: getfield      #200                // Field net/minecraft/util/MovementInput.sneak:Z
+     963: ifeq          987
+     966: aload_0
+     967: dup
+     968: getfield      #908                // Field motionY:D
+     971: aload_0
+     972: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+     975: invokevirtual #911                // Method net/minecraft/entity/player/PlayerCapabilities.getFlySpeed:()F
+     978: ldc_w         #912                // float 3.0f
+     981: fmul
+     982: f2d
+     983: dsub
+     984: putfield      #908                // Field motionY:D
+     987: aload_0
+     988: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+     991: getfield      #197                // Field net/minecraft/util/MovementInput.jump:Z
+     994: ifeq          1018
+     997: aload_0
+     998: dup
+     999: getfield      #908                // Field motionY:D
+    1002: aload_0
+    1003: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+    1006: invokevirtual #911                // Method net/minecraft/entity/player/PlayerCapabilities.getFlySpeed:()F
+    1009: ldc_w         #912                // float 3.0f
+    1012: fmul
+    1013: f2d
+    1014: dadd
+    1015: putfield      #908                // Field motionY:D
+    1018: aload_0
+    1019: invokevirtual #914                // Method isRidingHorse:()Z
+    1022: ifeq          1172
+    1025: aload_0
+    1026: getfield      #916                // Field horseJumpPowerCounter:I
+    1029: ifge          1054
+    1032: aload_0
+    1033: dup
+    1034: getfield      #916                // Field horseJumpPowerCounter:I
+    1037: iconst_1
+    1038: iadd
+    1039: putfield      #916                // Field horseJumpPowerCounter:I
+    1042: aload_0
+    1043: getfield      #916                // Field horseJumpPowerCounter:I
+    1046: ifne          1054
+    1049: aload_0
+    1050: fconst_0
+    1051: putfield      #551                // Field horseJumpPower:F
+    1054: iload_1
+    1055: ifeq          1081
+    1058: aload_0
+    1059: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+    1062: getfield      #197                // Field net/minecraft/util/MovementInput.jump:Z
+    1065: ifne          1081
+    1068: aload_0
+    1069: bipush        -10
+    1071: putfield      #916                // Field horseJumpPowerCounter:I
+    1074: aload_0
+    1075: invokevirtual #918                // Method sendHorseJump:()V
+    1078: goto          1177
+    1081: iload_1
+    1082: ifne          1108
+    1085: aload_0
+    1086: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+    1089: getfield      #197                // Field net/minecraft/util/MovementInput.jump:Z
+    1092: ifeq          1108
+    1095: aload_0
+    1096: iconst_0
+    1097: putfield      #916                // Field horseJumpPowerCounter:I
+    1100: aload_0
+    1101: fconst_0
+    1102: putfield      #551                // Field horseJumpPower:F
+    1105: goto          1177
+    1108: iload_1
+    1109: ifeq          1177
+    1112: aload_0
+    1113: dup
+    1114: getfield      #916                // Field horseJumpPowerCounter:I
+    1117: iconst_1
+    1118: iadd
+    1119: putfield      #916                // Field horseJumpPowerCounter:I
+    1122: aload_0
+    1123: getfield      #916                // Field horseJumpPowerCounter:I
+    1126: bipush        10
+    1128: if_icmpge     1147
+    1131: aload_0
+    1132: aload_0
+    1133: getfield      #916                // Field horseJumpPowerCounter:I
+    1136: i2f
+    1137: ldc_w         #495                // float 0.1f
+    1140: fmul
+    1141: putfield      #551                // Field horseJumpPower:F
+    1144: goto          1177
+    1147: aload_0
+    1148: ldc_w         #783                // float 0.8f
+    1151: fconst_2
+    1152: aload_0
+    1153: getfield      #916                // Field horseJumpPowerCounter:I
+    1156: bipush        9
+    1158: isub
+    1159: i2f
+    1160: fdiv
+    1161: ldc_w         #495                // float 0.1f
+    1164: fmul
+    1165: fadd
+    1166: putfield      #551                // Field horseJumpPower:F
+    1169: goto          1177
+    1172: aload_0
+    1173: fconst_0
+    1174: putfield      #551                // Field horseJumpPower:F
+    1177: aload_0
+    1178: invokespecial #920                // Method net/minecraft/client/entity/AbstractClientPlayer.onLivingUpdate:()V
+    1181: aload_0
+    1182: getfield      #175                // Field onGround:Z
+    1185: ifeq          1223
+    1188: aload_0
+    1189: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+    1192: getfield      #900                // Field net/minecraft/entity/player/PlayerCapabilities.isFlying:Z
+    1195: ifeq          1223
+    1198: aload_0
+    1199: getfield      #86                 // Field mc:Lnet/minecraft/client/Minecraft;
+    1202: getfield      #892                // Field net/minecraft/client/Minecraft.playerController:Lnet/minecraft/client/multiplayer/PlayerControllerMP;
+    1205: invokevirtual #897                // Method net/minecraft/client/multiplayer/PlayerControllerMP.isSpectatorMode:()Z
+    1208: ifne          1223
+    1211: aload_0
+    1212: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+    1215: iconst_0
+    1216: putfield      #900                // Field net/minecraft/entity/player/PlayerCapabilities.isFlying:Z
+    1219: aload_0
+    1220: invokevirtual #902                // Method sendPlayerAbilities:()V
+    1223: return
+
+  public static net.minecraft.client.entity.EntityPlayerSP newInstance(net.minecraft.client.Minecraft, net.minecraft.world.World, net.minecraft.client.network.NetHandlerPlayClient, net.minecraft.stats.StatFileWriter);
+    Code:
+       0: new           #2                  // class net/minecraft/client/entity/EntityPlayerSP
+       3: dup
+       4: aload_0
+       5: aload_1
+       6: aload_2
+       7: aload_3
+       8: invokespecial #926                // Method "<init>":(Lnet/minecraft/client/Minecraft;Lnet/minecraft/world/World;Lnet/minecraft/client/network/NetHandlerPlayClient;Lnet/minecraft/stats/StatFileWriter;)V
+      11: areturn
+
+  public static net.minecraft.client.entity.EntityPlayerSP newInstance();
+    Code:
+       0: new           #2                  // class net/minecraft/client/entity/EntityPlayerSP
+       3: dup
+       4: invokespecial #928                // Method "<init>":()V
+       7: areturn
+
+  public java.util.Optional bridge$getClientBrand();
+    Code:
+       0: goto          11
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: nop
+       8: nop
+       9: nop
+      10: athrow
+      11: aload_0
+      12: invokevirtual #939                // Method getClientBrand:()Ljava/lang/String;
+      15: invokestatic  #945                // Method java/util/Optional.ofNullable:(Ljava/lang/Object;)Ljava/util/Optional;
+      18: areturn
+
+  public com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.RRCRRCORICCHOHHIRCHIROOHIIOHCO.RRCRRCORICCHOHHIRCHIROOHIIOHCO.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH bridge$getSendQueue();
+    Code:
+       0: aload_0
+       1: getfield      #82                 // Field sendQueue:Lnet/minecraft/client/network/NetHandlerPlayClient;
+       4: checkcast     #951                // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH
+       7: areturn
+
+  public void bridge$sendChatMessage(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #954                // Method sendChatMessage:(Ljava/lang/String;)V
+       5: return
+
+  public void bridge$sendCommand(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #954                // Method sendChatMessage:(Ljava/lang/String;)V
+       5: return
+
+  public com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.RRCRRCORICCHOHHIRCHIROOHIIOHCO.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.IRCIIHHICIHRCOCRROCOICRIHHCCHH bridge$getMovementInput();
+    Code:
+       0: aload_0
+       1: getfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+       4: checkcast     #959                // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH
+       7: areturn
+
+  public void bridge$onCriticalHit(com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.CORCOCICIRIOHROHROIIOOHICCHCRR.CRRRICCRROCOHHOHIICIHORCOORRRH);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #963                // class net/minecraft/entity/Entity
+       5: invokevirtual #965                // Method onCriticalHit:(Lnet/minecraft/entity/Entity;)V
+       8: return
+
+  public void bridge$setMovementInput(com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.RRCRRCORICCHOHHIRCHIROOHIIOHCO.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.IRCIIHHICIHRCOCRROCOICRIHHCCHH);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #194                // class net/minecraft/util/MovementInput
+       5: putfield      #192                // Field movementInput:Lnet/minecraft/util/MovementInput;
+       8: return
+
+  public boolean bridge$isSprinting();
+    Code:
+       0: aload_0
+       1: invokevirtual #209                // Method isSprinting:()Z
+       4: ireturn
+
+  public void bridge$setSprinting(boolean);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokevirtual #880                // Method setSprinting:(Z)V
+       5: return
+
+  public void bridge$pushOutOfBlocks(double, double, double);
+    Code:
+       0: aload_0
+       1: dload_1
+       2: dload_3
+       3: dload         5
+       5: invokevirtual #828                // Method pushOutOfBlocks:(DDD)Z
+       8: pop
+       9: return
+
+  public void bridge$sendPlayerAbilities();
+    Code:
+       0: aload_0
+       1: invokevirtual #902                // Method sendPlayerAbilities:()V
+       4: return
+
+  public boolean bridge$isRidingHorse();
+    Code:
+       0: aload_0
+       1: invokevirtual #914                // Method isRidingHorse:()Z
+       4: ireturn
+
+  public void bridge$sendRidingJumpPacket();
+    Code:
+       0: goto          37
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: nop
+       8: nop
+       9: nop
+      10: nop
+      11: nop
+      12: nop
+      13: nop
+      14: nop
+      15: athrow
+      16: nop
+      17: nop
+      18: nop
+      19: nop
+      20: nop
+      21: nop
+      22: nop
+      23: nop
+      24: nop
+      25: nop
+      26: nop
+      27: nop
+      28: nop
+      29: nop
+      30: athrow
+      31: nop
+      32: nop
+      33: nop
+      34: nop
+      35: nop
+      36: athrow
+      37: aload_0
+      38: invokevirtual #918                // Method sendHorseJump:()V
+      41: return
+
+  public int bridge$getSprintToggleTimer();
+    Code:
+       0: aload_0
+       1: getfield      #747                // Field sprintToggleTimer:I
+       4: ireturn
+
+  public void bridge$setSprintToggleTimer(int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: putfield      #747                // Field sprintToggleTimer:I
+       5: return
+
+  public void bridge$setHorseJumpPowerCounter(int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: putfield      #916                // Field horseJumpPowerCounter:I
+       5: return
+
+  public void bridge$setHorseJumpPower(float);
+    Code:
+       0: aload_0
+       1: fload_1
+       2: putfield      #551                // Field horseJumpPower:F
+       5: return
+
+  public float bridge$getHorseJumpPower();
+    Code:
+       0: aload_0
+       1: getfield      #551                // Field horseJumpPower:F
+       4: freturn
+
+  public com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.CIOHHCORHRCCRICCCORIHCRHCCCRRR.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH bridge$getOpenContainer();
+    Code:
+       0: aload_0
+       1: getfield      #361                // Field openContainer:Lnet/minecraft/inventory/Container;
+       4: checkcast     #982                // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CIOHHCORHRCCRICCCORIHCRHCCCRRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH
+       7: areturn
+
+  public int bridge$getHorseJumpPowerCounter();
+    Code:
+       0: aload_0
+       1: getfield      #916                // Field horseJumpPowerCounter:I
+       4: ireturn
+
+  public com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.IHCRORHRORIICHRHRCHRRIRRHHOCOO.IRCIIHHICIHRCOCRROCOICRIHHCCHH bridge$getStatsCounter();
+    Code:
+       0: aload_0
+       1: getfield      #84                 // Field statWriter:Lnet/minecraft/stats/StatFileWriter;
+       4: checkcast     #987                // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IHCRORHRORIICHRHRCHRRIRRHHOCOO/IRCIIHHICIHRCOCRROCOICRIHHCCHH
+       7: areturn
+
+  public int bridge$getSwingProgress();
+    Code:
+       0: aload_0
+       1: getfield      #991                // Field swingProgressInt:I
+       4: ireturn
+
+  public boolean bridge$isSwingInProgress();
+    Code:
+       0: aload_0
+       1: getfield      #995                // Field isSwingInProgress:Z
+       4: ireturn
+
+  public int bridge$getSwingingArm();
+    Code:
+       0: goto          22
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: nop
+       8: nop
+       9: athrow
+      10: nop
+      11: nop
+      12: nop
+      13: nop
+      14: nop
+      15: nop
+      16: nop
+      17: nop
+      18: nop
+      19: athrow
+      20: athrow
+      21: athrow
+      22: iconst_0
+      23: ireturn
+
+  public void bridge$swingHand(int);
+    Code:
+       0: goto          15
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: nop
+       8: nop
+       9: nop
+      10: nop
+      11: nop
+      12: nop
+      13: nop
+      14: athrow
+      15: aload_0
+      16: invokevirtual #998                // Method swingItem:()V
+      19: return
+
+  public void bridge$swingHandVisually(int);
+    Code:
+       0: aload_0
+       1: getfield      #995                // Field isSwingInProgress:Z
+       4: ifeq          27
+       7: aload_0
+       8: getfield      #991                // Field swingProgressInt:I
+      11: aload_0
+      12: invokevirtual #1002               // Method getArmSwingAnimationEnd:()I
+      15: iconst_2
+      16: idiv
+      17: if_icmpge     27
+      20: aload_0
+      21: getfield      #991                // Field swingProgressInt:I
+      24: ifge          49
+      27: aload_0
+      28: iconst_m1
+      29: putfield      #991                // Field swingProgressInt:I
+      32: aload_0
+      33: iconst_1
+      34: putfield      #995                // Field isSwingInProgress:Z
+      37: goto          49
+      40: nop
+      41: nop
+      42: nop
+      43: nop
+      44: nop
+      45: nop
+      46: nop
+      47: nop
+      48: athrow
+      49: return
+
+  public float bridge$getAttackStrengthScale();
+    Code:
+       0: goto          9
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: nop
+       8: athrow
+       9: new           #1005               // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IIHRRHORCRCROCHHOHORCHCROCIHRO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/CRRRICCRROCOHHOHIICIHORCOORRRH
+      12: dup
+      13: invokespecial #1006               // Method com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IIHRRHORCRCROCHHOHORCHCROCIHRO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/CRRRICCRROCOHHOHIICIHORCOORRRH."<init>":()V
+      16: athrow
+
+  public float bridge$getCurrentItemAttackStrengthDelay();
+    Code:
+       0: goto          8
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: athrow
+       8: new           #1005               // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IIHRRHORCRCROCHHOHORCHCROCIHRO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/CRRRICCRROCOHHOHIICIHORCOORRRH
+      11: dup
+      12: invokespecial #1006               // Method com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IIHRRHORCRCROCHHOHORCHCROCIHRO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/CRRRICCRROCOHHOHIICIHORCOORRRH."<init>":()V
+      15: athrow
+
+  public int bridge$getUsedItemHand();
+    Code:
+       0: iconst_0
+       1: ireturn
+       2: nop
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: nop
+       8: nop
+       9: athrow
+
+  public void bridge$startUsingItem(int);
+    Code:
+       0: aload_0
+       1: invokevirtual #1013               // Method getHeldItem:()Lnet/minecraft/item/ItemStack;
+       4: astore_2
+       5: aload_0
+       6: aload_2
+       7: aload_2
+       8: invokevirtual #572                // Method net/minecraft/item/ItemStack.getItem:()Lnet/minecraft/item/Item;
+      11: aload_2
+      12: invokevirtual #1017               // Method net/minecraft/item/Item.getMaxItemUseDuration:(Lnet/minecraft/item/ItemStack;)I
+      15: invokevirtual #1021               // Method setItemInUse:(Lnet/minecraft/item/ItemStack;I)V
+      18: goto          30
+      21: nop
+      22: nop
+      23: nop
+      24: nop
+      25: nop
+      26: nop
+      27: nop
+      28: nop
+      29: athrow
+      30: return
+
+  public void bridge$stopUsingItem();
+    Code:
+       0: aload_0
+       1: invokevirtual #1025               // Method clearItemInUse:()V
+       4: goto          11
+       7: nop
+       8: nop
+       9: nop
+      10: athrow
+      11: return
+
+  public void bridge$drop(boolean);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokevirtual #1028               // Method dropOneItem:(Z)Lnet/minecraft/entity/item/EntityItem;
+       5: pop
+       6: goto          15
+       9: nop
+      10: nop
+      11: nop
+      12: nop
+      13: nop
+      14: athrow
+      15: return
+
+  public boolean bridge$hasHealth();
+    Code:
+       0: aload_0
+       1: getfield      #420                // Field capabilities:Lnet/minecraft/entity/player/PlayerCapabilities;
+       4: getfield      #1032               // Field net/minecraft/entity/player/PlayerCapabilities.isCreativeMode:Z
+       7: ifne          21
+      10: aload_0
+      11: invokevirtual #1035               // Method bridge$isSpectator:()Z
+      14: ifne          21
+      17: iconst_1
+      18: goto          22
+      21: iconst_0
+      22: ireturn
+
+  public int bridge$getExperienceLevel();
+    Code:
+       0: aload_0
+       1: getfield      #529                // Field experienceLevel:I
+       4: ireturn
+
+  public void bridge$closeScreen();
+    Code:
+       0: aload_0
+       1: invokevirtual #1038               // Method closeScreen:()V
+       4: return
+
+  public com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.IRCRRHRCIRHIHIHROHCRRHIIHHHHCH.CRHROHHHCIHHCOHCOORCRIHHIICROR bridge$getLastReportedLookAngle();
+    Code:
+       0: aload_0
+       1: aload_0
+       2: getfield      #254                // Field lastReportedPitch:F
+       5: aload_0
+       6: getfield      #252                // Field lastReportedYaw:F
+       9: invokevirtual #1044               // Method getVectorForRotation:(FF)Lnet/minecraft/util/Vec3;
+      12: checkcast     #1046               // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IRCRRHRCIRHIHIHROHCRRHIIHHHHCH/CRHROHHHCIHHCOHCOORCRIHHIICROR
+      15: areturn
+
+  public org.joml.Vector3d bridge$getLastReportedPos();
+    Code:
+       0: new           #1050               // class org/joml/Vector3d
+       3: dup
+       4: aload_0
+       5: getfield      #237                // Field lastReportedPosX:D
+       8: aload_0
+       9: getfield      #248                // Field lastReportedPosY:D
+      12: aload_0
+      13: getfield      #250                // Field lastReportedPosZ:D
+      16: invokespecial #1051               // Method org/joml/Vector3d."<init>":(DDD)V
+      19: areturn
+
+  public boolean bridge$canSeeName(com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.CORCOCICIRIOHROHROIIOOHICCHCRR.RIOOCHICIHRHOHCCCCCHOCCCOHCRHI.HHCCIRHCCCIIRHCROHIORHIRHHIORH);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: if_acmpne     7
+       5: iconst_1
+       6: ireturn
+       7: aload_1
+       8: checkcast     #1055               // class net/minecraft/entity/player/EntityPlayer
+      11: invokevirtual #1059               // Method net/minecraft/entity/player/EntityPlayer.getTeam:()Lnet/minecraft/scoreboard/Team;
+      14: astore_2
+      15: aload_0
+      16: invokevirtual #1060               // Method getTeam:()Lnet/minecraft/scoreboard/Team;
+      19: astore_3
+      20: goto          36
+      23: nop
+      24: nop
+      25: nop
+      26: nop
+      27: nop
+      28: nop
+      29: nop
+      30: athrow
+      31: nop
+      32: nop
+      33: nop
+      34: nop
+      35: athrow
+      36: aload_2
+      37: ifnull        138
+      40: aload_2
+      41: invokevirtual #1066               // Method net/minecraft/scoreboard/Team.getNameTagVisibility:()Lnet/minecraft/scoreboard/Team$EnumVisible;
+      44: astore        4
+      46: getstatic     #1070               // Field net/minecraft/client/entity/EntityPlayerSP$Anonymous$34ee23bf862735d5a6d6730d0c2a3d01.RORHHRRROHCHHCRCHRIHHRHROOOHIH:[I
+      49: aload         4
+      51: invokevirtual #1075               // Method net/minecraft/scoreboard/Team$EnumVisible.ordinal:()I
+      54: iaload
+      55: tableswitch   { // 1 to 4
+                     1: 92
+                     2: 96
+                     3: 100
+                     4: 120
+               default: 84
+          }
+      84: new           #1077               // class java/lang/IncompatibleClassChangeError
+      87: dup
+      88: invokespecial #1078               // Method java/lang/IncompatibleClassChangeError."<init>":()V
+      91: athrow
+      92: iconst_1
+      93: goto          137
+      96: iconst_0
+      97: goto          137
+     100: aload_3
+     101: ifnull        112
+     104: aload_2
+     105: aload_3
+     106: invokevirtual #1082               // Method net/minecraft/scoreboard/Team.isSameTeam:(Lnet/minecraft/scoreboard/Team;)Z
+     109: ifeq          116
+     112: iconst_1
+     113: goto          137
+     116: iconst_0
+     117: goto          137
+     120: aload_3
+     121: ifnull        132
+     124: aload_2
+     125: aload_3
+     126: invokevirtual #1082               // Method net/minecraft/scoreboard/Team.isSameTeam:(Lnet/minecraft/scoreboard/Team;)Z
+     129: ifne          136
+     132: iconst_1
+     133: goto          137
+     136: iconst_0
+     137: ireturn
+     138: aload_1
+     139: aload_0
+     140: invokeinterface #1087,  2         // InterfaceMethod com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/HHCCIRHCCCIIRHCROHIORHIRHHIORH.bridge$isInvisibleTo:(Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/HHCCIRHCCCIIRHCROHIORHIRHHIORH;)Z
+     145: ifne          152
+     148: iconst_1
+     149: goto          153
+     152: iconst_0
+     153: ireturn
+
+  public boolean bridge$isPlayerSleeping();
+    Code:
+       0: aload_0
+       1: invokevirtual #1091               // Method isPlayerSleeping:()Z
+       4: ireturn
+
+  public float bridge$getSleepProgress();
+    Code:
+       0: aload_0
+       1: invokevirtual #1095               // Method getSleepTimer:()I
+       4: i2f
+       5: freturn
+
+  public float bridge$getCooldown(com.moonsworth.lunar.HHCCIRHCCCIIRHCROHIORHIRHHIORH.IHHCHHHCRIHOOCOIOOCRIIICIOROIR.IIRHCHHOICHRICOOCRORCCIOOIHOIR);
+    Code:
+       0: goto          39
+       3: nop
+       4: nop
+       5: nop
+       6: nop
+       7: athrow
+       8: nop
+       9: nop
+      10: nop
+      11: nop
+      12: nop
+      13: nop
+      14: nop
+      15: nop
+      16: nop
+      17: nop
+      18: nop
+      19: nop
+      20: nop
+      21: nop
+      22: nop
+      23: athrow
+      24: nop
+      25: nop
+      26: nop
+      27: nop
+      28: nop
+      29: nop
+      30: nop
+      31: nop
+      32: nop
+      33: nop
+      34: nop
+      35: nop
+      36: nop
+      37: nop
+      38: athrow
+      39: ldc_w         #1099               // float -1.0f
+      42: freturn
+
+  public float bridge$getCurrentMood();
+    Code:
+       0: fconst_0
+       1: freturn
+
+  private void handler$zhl001$lunar$entityLivingHurtEvent(net.minecraft.util.DamageSource, float, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable);
+    Code:
+       0: invokestatic  #1109               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.HCCOIRHHOOHICHHIOOOIRORRCRIRRO:()Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+       3: ldc_w         #1111               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI
+       6: aload_0
+       7: aload_1
+       8: fload_2
+       9: invokedynamic #1124,  0           // InvokeDynamic #2:get:(Lnet/minecraft/client/entity/EntityPlayerSP;Lnet/minecraft/util/DamageSource;F)Ljava/util/function/Supplier;
+      14: invokevirtual #1128               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH;
+      17: checkcast     #1111               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI
+      20: astore        4
+      22: aload         4
+      24: ifnull        43
+      27: aload         4
+      29: invokevirtual #1129               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI.isCancelled:()Z
+      32: ifeq          43
+      35: aload_3
+      36: iconst_0
+      37: invokestatic  #1135               // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+      40: invokevirtual #1139               // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable.setReturnValue:(Ljava/lang/Object;)V
+      43: fload_2
+      44: fconst_0
+      45: fcmpl
+      46: ifne          63
+      49: invokestatic  #1145               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.ICORCRCHRIICOHOOIHHIHOIHIIRCOR:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+      52: invokevirtual #1151               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.COOCRCHRIOOCHCIHCIOCHHIOOIRHIC:()Lcom/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IIHRRHORCRCROCHHOHORCHCROCIHRO;
+      55: aload_0
+      56: checkcast     #7                  // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH
+      59: iconst_0
+      60: invokevirtual #1156               // Method com/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IIHRRHORCRCROCHHOHORCHCROCIHRO.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/HHCCIRHCCCIIRHCROHIORHIRHHIORH;Z)V
+      63: return
+
+  private void handler$zhl001$lunar$stopAnimatingOnDamage(net.minecraft.util.DamageSource, float, org.spongepowered.asm.mixin.injection.callback.CallbackInfo);
+    Code:
+       0: fload_2
+       1: fconst_0
+       2: fcmpl
+       3: ifle          20
+       6: invokestatic  #1145               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.ICORCRCHRIICOHOOIHHIHOIHIIRCOR:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+       9: invokevirtual #1151               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.COOCRCHRIOOCHCIHCIOCHHIOOIRHIC:()Lcom/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IIHRRHORCRCROCHHOHORCHCROCIHRO;
+      12: aload_0
+      13: checkcast     #7                  // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH
+      16: iconst_0
+      17: invokevirtual #1156               // Method com/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IIHRRHORCRCROCHHOHORCHCROCIHRO.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/HHCCIRHCCCIIRHCROHIORHIRHHIORH;Z)V
+      20: return
+
+  private void handler$zhl000$lunar$criticalStrikeEvent(net.minecraft.entity.Entity, org.spongepowered.asm.mixin.injection.callback.CallbackInfo);
+    Code:
+       0: invokestatic  #1109               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.HCCOIRHHOOHICHHIOOOIRORRCRIRRO:()Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+       3: ldc_w         #1158               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH
+       6: aload_1
+       7: invokedynamic #1168,  0           // InvokeDynamic #3:get:(Lnet/minecraft/entity/Entity;)Ljava/util/function/Supplier;
+      12: invokevirtual #1128               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH;
+      15: checkcast     #1158               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH
+      18: astore_3
+      19: aload_3
+      20: ifnull        34
+      23: aload_3
+      24: invokevirtual #1169               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.isCancelled:()Z
+      27: ifeq          34
+      30: aload_2
+      31: invokevirtual #1172               // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo.cancel:()V
+      34: return
+
+  private void handler$zhl000$lunar$enchantCriticalStrikeEvent(net.minecraft.entity.Entity, org.spongepowered.asm.mixin.injection.callback.CallbackInfo);
+    Code:
+       0: invokestatic  #1109               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.HCCOIRHHOOHICHHIOOOIRORRCRIRRO:()Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+       3: ldc_w         #1174               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH
+       6: aload_1
+       7: invokedynamic #1182,  0           // InvokeDynamic #4:get:(Lnet/minecraft/entity/Entity;)Ljava/util/function/Supplier;
+      12: invokevirtual #1128               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH;
+      15: checkcast     #1174               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH
+      18: astore_3
+      19: aload_3
+      20: ifnull        34
+      23: aload_3
+      24: invokevirtual #1183               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH.isCancelled:()Z
+      27: ifeq          34
+      30: aload_2
+      31: invokevirtual #1172               // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo.cancel:()V
+      34: return
+
+  private void handler$zhl000$lunar$livingUpdateEvent(org.spongepowered.asm.mixin.injection.callback.CallbackInfo);
+    Code:
+       0: invokestatic  #1109               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.HCCOIRHHOOHICHHIOOOIRORRCRIRRO:()Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+       3: ldc_w         #1185               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/RICRIRRCOHRCOCRRHHCRHRROOIOHHR
+       6: invokedynamic #1192,  0           // InvokeDynamic #5:get:()Ljava/util/function/Supplier;
+      11: invokevirtual #1128               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH;
+      14: pop
+      15: aload_0
+      16: getfield      #1195               // Field isDead:Z
+      19: ifeq          55
+      22: aload_0
+      23: invokevirtual #1199               // Method getUniqueID:()Ljava/util/UUID;
+      26: invokestatic  #1203               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.OHORHCCCORHIRHHCROHIRORRROROOH:()Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+      29: invokeinterface #1206,  1         // InterfaceMethod com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.bridge$getUniqueID:()Ljava/util/UUID;
+      34: invokevirtual #1209               // Method java/util/UUID.equals:(Ljava/lang/Object;)Z
+      37: ifeq          55
+      40: invokestatic  #1109               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.HCCOIRHHOOHICHHIOOOIRORRCRIRRO:()Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+      43: ldc_w         #1211               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CRRRICCRROCOHHOHIICIHORCOORRRH
+      46: invokedynamic #1216,  0           // InvokeDynamic #6:get:()Ljava/util/function/Supplier;
+      51: invokevirtual #1128               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH;
+      54: pop
+      55: return
+
+  private void redirect$zhl000$lunar$onSprinting(net.minecraft.client.entity.EntityPlayerSP, boolean);
+    Code:
+       0: iload_2
+       1: ifeq          44
+       4: invokestatic  #1145               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.ICORCRCHRIICOHOOIHHIHOIHIIRCOR:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+       7: invokevirtual #1220               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HHCCIRORCRCHOIOHRRIRRRIORRCRRR:()Lcom/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO;
+      10: invokevirtual #1226               // Method com/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO.HRCOHOHOHHCIOIICOHIIORHCHIRCIR:()Lcom/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/IHROCRRIRIROCCCRCRRROCRRCRIIHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+      13: invokevirtual #1231               // Method com/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/IHROCRRIRIROCCCRCRRROCRRCRIIHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.isEnabled:()Z
+      16: ifeq          44
+      19: invokestatic  #1145               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.ICORCRCHRIICOHOOIHHIHOIHIIRCOR:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+      22: invokevirtual #1220               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HHCCIRORCRCHOIOHRRIRRRIORRCRRR:()Lcom/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO;
+      25: invokevirtual #1226               // Method com/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO.HRCOHOHOHHCIOIICOHIIORHCHIRCIR:()Lcom/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/IHROCRRIRIROCCCRCRRROCRRCRIIHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+      28: invokevirtual #1235               // Method com/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/IHROCRRIRIROCCCRCRRROCRRCRIIHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.OIOIIIHCIRCRHIRHHOHIIHCOIHOCCH:()Lcom/moonsworth/lunar/client/HHRIICOIOORCHCOIICOOIHIRHHICRI/HICHRCOHCCRHOHCICOOCHOIHCCHIRI;
+      31: invokevirtual #1239               // Method com/moonsworth/lunar/client/HHRIICOIOORCHCOIICOOIHIRHHICRI/HICHRCOHCCRHOHCICOOCHOIHCCHIRI.get:()Ljava/lang/Object;
+      34: checkcast     #1131               // class java/lang/Boolean
+      37: invokevirtual #1242               // Method java/lang/Boolean.booleanValue:()Z
+      40: ifne          44
+      43: return
+      44: aload_1
+      45: iload_2
+      46: invokevirtual #880                // Method setSprinting:(Z)V
+      49: return
+
+  private void handler$zhl001$lunar$chatMessageEvents(java.lang.String, org.spongepowered.asm.mixin.injection.callback.CallbackInfo);
+    Code:
+       0: aload_1
+       1: ldc_w         #1244               // String /
+       4: invokevirtual #1248               // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+       7: ifeq          44
+      10: invokestatic  #1109               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.HCCOIRHHOOHICHHIOOOIRORRCRIRRO:()Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+      13: ldc_w         #1250               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH/CRRRICCRROCOHHOHIICIHORCOORRRH
+      16: aload_1
+      17: invokedynamic #1260,  0           // InvokeDynamic #7:get:(Ljava/lang/String;)Ljava/util/function/Supplier;
+      22: invokevirtual #1128               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH;
+      25: checkcast     #1250               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH/CRRRICCRROCOHHOHIICIHORCOORRRH
+      28: astore_3
+      29: aload_3
+      30: ifnull        44
+      33: aload_3
+      34: invokevirtual #1261               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH/CRRRICCRROCOHHOHIICIHORCOORRRH.isCancelled:()Z
+      37: ifeq          44
+      40: aload_2
+      41: invokevirtual #1172               // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfo.cancel:()V
+      44: return
+
+  private boolean wrapWithCondition$zhl000$apollo$handleAntiPortalTraps(net.minecraft.client.Minecraft, net.minecraft.client.gui.GuiScreen);
+    Code:
+       0: invokestatic  #1145               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.ICORCRCHRIICOHOOIHHIHOIHIIRCOR:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+       3: invokevirtual #1265               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.CIRCCCHCCCROROIIOIHIOROIHCHRCH:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+       6: ldc_w         #1267               // class com/lunarclient/apollo/module/serverrule/ServerRuleModule
+       9: invokevirtual #1273               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.OOROOCCIRCCRHOIOIORIHCHHOOCCOR:(Ljava/lang/Class;)Ljava/util/Optional;
+      12: invokedynamic #1284,  0           // InvokeDynamic #8:test:()Ljava/util/function/Predicate;
+      17: invokevirtual #1288               // Method java/util/Optional.filter:(Ljava/util/function/Predicate;)Ljava/util/Optional;
+      20: invokedynamic #1293,  0           // InvokeDynamic #9:test:()Ljava/util/function/Predicate;
+      25: invokevirtual #1288               // Method java/util/Optional.filter:(Ljava/util/function/Predicate;)Ljava/util/Optional;
+      28: invokevirtual #1296               // Method java/util/Optional.isEmpty:()Z
+      31: ireturn
+
+  public net.minecraft.util.Vec3 getLook(float);
+    Code:
+       0: aload_0
+       1: aload_0
+       2: getfield      #172                // Field rotationPitch:F
+       5: aload_0
+       6: getfield      #169                // Field rotationYaw:F
+       9: invokevirtual #1044               // Method getVectorForRotation:(FF)Lnet/minecraft/util/Vec3;
+      12: areturn
+
+  public void addStat(net.minecraft.stats.StatBase, int);
+    Code:
+       0: aload_1
+       1: ifnull        14
+       4: aload_0
+       5: getfield      #84                 // Field statWriter:Lnet/minecraft/stats/StatFileWriter;
+       8: aload_0
+       9: aload_1
+      10: iload_2
+      11: invokevirtual #1309               // Method net/minecraft/stats/StatFileWriter.increaseStat:(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/stats/StatBase;I)V
+      14: return
+
+  private void handler$zhl000$lunar$rewindFixPlayerAnimations(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable);
+    Code:
+       0: invokestatic  #1145               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.ICORCRCHRIICOHOOIHHIHOIHIIRCOR:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+       3: invokevirtual #1220               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HHCCIRORCRCHOIOHRRIRRRIORRCRRR:()Lcom/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO;
+       6: invokevirtual #1313               // Method com/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO.IOIOHOOCRRORCCCOCIRROHCOCCCRCO:()Lcom/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HIHHOCRHHRORRHHRORRRIIHHORIHOC/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+       9: invokevirtual #1318               // Method com/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HIHHOCRHHRORRHHRORRRIIHHORIHOC/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HRIICOIOIIIIRIHHOICRHOIIRCIRIC:()Z
+      12: ifeq          23
+      15: aload_1
+      16: iconst_1
+      17: invokestatic  #1135               // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+      20: invokevirtual #1139               // Method org/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable.setReturnValue:(Ljava/lang/Object;)V
+      23: return
+
+  private boolean wrapOperation$zhl000$lunar$rewindIgnoreSprintKey(net.minecraft.client.settings.KeyBinding, com.llamalad7.mixinextras.injector.wrapoperation.Operation);
+    Code:
+       0: invokestatic  #1145               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.ICORCRCHRIICOHOOIHHIHOIHIIRCOR:()Lcom/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+       3: invokevirtual #1220               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HHCCIRORCRCHOIOHRRIRRRIORRCRRR:()Lcom/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO;
+       6: invokevirtual #1313               // Method com/moonsworth/lunar/client/HICRRICCHCCROOHHCHOCOCCHOIHHOC/RIOOCHICIHRHOHCCCCCHOCCCOHCRHI/IHIRRIIORRHORHRORIHOROIRCORCOO.IOIOHOOCRRORCCCOCIRROHCOCCCRCO:()Lcom/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HIHHOCRHHRORRHHRORRRIIHHORIHOC/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH;
+       9: invokevirtual #1318               // Method com/moonsworth/lunar/client/CRICCOOHHHCHOORCICOCOHIHOIRHOO/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HIHHOCRHHRORRHHRORRRIIHHORIHOC/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HRIICOIOIIIIRIHHOICRHOIIRCIRIC:()Z
+      12: ifeq          17
+      15: iconst_0
+      16: ireturn
+      17: aload_2
+      18: iconst_1
+      19: anewarray     #1320               // class java/lang/Object
+      22: dup
+      23: iconst_0
+      24: aload_1
+      25: aastore
+      26: invokeinterface #1324,  2         // InterfaceMethod com/llamalad7/mixinextras/injector/wrapoperation/Operation.call:([Ljava/lang/Object;)Ljava/lang/Object;
+      31: checkcast     #1131               // class java/lang/Boolean
+      34: invokevirtual #1242               // Method java/lang/Boolean.booleanValue:()Z
+      37: ireturn
+
+  private void handler$zhl001$lunar$dropItemEvent(boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable);
+    Code:
+       0: invokestatic  #1109               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.HCCOIRHHOOHICHHIOOOIRORRCRIRRO:()Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH;
+       3: ldc_w         #1326               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/CRICCOOHHHCHOORCICOCOHIHOIRHOO
+       6: iload_1
+       7: invokedynamic #1336,  0           // InvokeDynamic #10:get:(Z)Ljava/util/function/Supplier;
+      12: invokevirtual #1128               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH:(Ljava/lang/Class;Ljava/util/function/Supplier;)Lcom/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH;
+      15: pop
+      16: return
+
+  private static com.moonsworth.lunar.client.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.CORCOCICIRIOHROHROIIOOHICCHCRR.CRICCOOHHHCHOORCICOCOHIHOIRHOO md8f90d3$lambda$lunar$dropItemEvent$6$0(boolean);
+    Code:
+       0: new           #1326               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/CRICCOOHHHCHOORCICOCOHIHOIRHOO
+       3: dup
+       4: iload_0
+       5: invokespecial #1337               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/CRICCOOHHHCHOORCICOCOHIHOIRHOO."<init>":(Z)V
+       8: areturn
+
+  private static boolean md8f90d3$lambda$apollo$handleAntiPortalTraps$5$1(com.moonsworth.lunar.client.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH);
+    Code:
+       0: invokestatic  #1341               // Method com/moonsworth/lunar/client/util/IICCOOCHCHROORHHIIHROHCCRHRCOR.HHICOIRCIIRIRRICOOCROCCOHRCRRI:()Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/RRCRRCORICCHOHHIRCHIROOHIIOHCO;
+       3: invokeinterface #1347,  1         // InterfaceMethod com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/RRCRRCORICCHOHHIRCHIROOHIIOHCO.bridge$getCurrentScreen:()Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/IRCIIHHICIHRCOCRROCOICRIHHCCHH/ORHIOICIOCRRHOOCOHRORIHICHRCRR;
+       8: instanceof    #1349               // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/IRCIIHHICIHRCOCRROCOICRIHHCCHH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI
+      11: ireturn
+
+  private static boolean md8f90d3$lambda$apollo$handleAntiPortalTraps$4$2(com.moonsworth.lunar.client.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH);
+    Code:
+       0: aload_0
+       1: invokevirtual #1355               // Method com/moonsworth/lunar/client/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.getOptions:()Lcom/lunarclient/apollo/option/Options;
+       4: getstatic     #1359               // Field com/lunarclient/apollo/module/serverrule/ServerRuleModule.ANTI_PORTAL_TRAPS:Lcom/lunarclient/apollo/option/SimpleOption;
+       7: invokeinterface #1364,  2         // InterfaceMethod com/lunarclient/apollo/option/Options.get:(Lcom/lunarclient/apollo/option/Option;)Ljava/lang/Object;
+      12: checkcast     #1131               // class java/lang/Boolean
+      15: invokevirtual #1242               // Method java/lang/Boolean.booleanValue:()Z
+      18: ireturn
+
+  private static com.moonsworth.lunar.client.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.IRCIIHHICIHRCOCRROCOICRIHHCCHH.CRRRICCRROCOHHOHIICIHORCOORRRH md8f90d3$lambda$lunar$chatMessageEvents$3$3(java.lang.String);
+    Code:
+       0: new           #1250               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH/CRRRICCRROCOHHOHIICIHORCOORRRH
+       3: dup
+       4: aload_0
+       5: invokespecial #1365               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH/CRRRICCRROCOHHOHIICIHORCOORRRH."<init>":(Ljava/lang/String;)V
+       8: areturn
+
+  private static com.moonsworth.lunar.client.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.CORCOCICIRIOHROHROIIOOHICCHCRR.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.IRCIIHHICIHRCOCRROCOICRIHHCCHH md8f90d3$lambda$lunar$enchantCriticalStrikeEvent$2$4(net.minecraft.entity.Entity);
+    Code:
+       0: new           #1174               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH
+       3: dup
+       4: aload_0
+       5: checkcast     #1367               // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/CRRRICCRROCOHHOHIICIHORCOORRRH
+       8: invokespecial #1369               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/IRCIIHHICIHRCOCRROCOICRIHHCCHH."<init>":(Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/CRRRICCRROCOHHOHIICIHORCOORRRH;)V
+      11: areturn
+
+  private static com.moonsworth.lunar.client.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.CORCOCICIRIOHROHROIIOOHICCHCRR.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HHCCIRHCCCIIRHCROHIORHIRHHIORH md8f90d3$lambda$lunar$criticalStrikeEvent$1$5(net.minecraft.entity.Entity);
+    Code:
+       0: new           #1158               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH
+       3: dup
+       4: aload_0
+       5: checkcast     #1367               // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/CRRRICCRROCOHHOHIICIHORCOORRRH
+       8: invokespecial #1370               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH."<init>":(Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/CRRRICCRROCOHHOHIICIHORCOORRRH;)V
+      11: areturn
+
+  private com.moonsworth.lunar.client.HRCHROOHRIHCRCRHRIIROCIRHOIRHH.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.CORCOCICIRIOHROHROIIOOHICCHCRR.RCIRROCCCIIHCIHCCRHHCCHOHHHCHH.HICHRCOHCCRHOHCICOOCHOIHCCHIRI md8f90d3$lambda$lunar$entityLivingHurtEvent$0$6(net.minecraft.util.DamageSource, float);
+    Code:
+       0: new           #1111               // class com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI
+       3: dup
+       4: aload_0
+       5: checkcast     #7                  // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/RRCRRCORICCHOHHIRCHIROOHIIOHCO/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/HHCCIRHCCCIIRHCROHIORHIRHHIORH
+       8: aload_1
+       9: checkcast     #1372               // class com/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IRCRRHRCIRHIHIHROHCRRHIIHHHHCH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI
+      12: fload_2
+      13: invokespecial #1375               // Method com/moonsworth/lunar/client/HRCHROOHRIHCRCRHRIIROCIRHOIRHH/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/CORCOCICIRIOHROHROIIOOHICCHCRR/RCIRROCCCIIHCIHCCRHHCCHOHHHCHH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI."<init>":(Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/CORCOCICIRIOHROHROIIOOHICCHCRR/CORCOCICIRIOHROHROIIOOHICCHCRR;Lcom/moonsworth/lunar/HHCCIRHCCCIIRHCROHIORHIRHHIORH/IRCRRHRCIRHIHIHROHCRRHIIHHHHCH/HICHRCOHCCRHOHCICOOCHOIHCCHIRI;F)V
+      16: areturn
+
+  private static java.lang.Boolean mixinextras$bridge$isKeyDown$112(java.lang.Object[]);
+    Code:
+       0: aload_0
+       1: bipush        1
+       3: ldc_w         #1377               // String [net.minecraft.client.settings.KeyBinding]
+       6: invokestatic  #1383               // Method com/llamalad7/mixinextras/injector/wrapoperation/WrapOperationRuntime.checkArgumentCount:([Ljava/lang/Object;ILjava/lang/String;)V
+       9: aload_0
+      10: dup
+      11: bipush        0
+      13: aaload
+      14: checkcast     #922                // class net/minecraft/client/settings/KeyBinding
+      17: swap
+      18: pop
+      19: invokevirtual #1386               // Method net/minecraft/client/settings/KeyBinding.isKeyDown:()Z
+      22: invokestatic  #1135               // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+      25: areturn
+
+  private static java.lang.Boolean mixinextras$bridge$isKeyDown$113(java.lang.Object[]);
+    Code:
+       0: aload_0
+       1: bipush        1
+       3: ldc_w         #1377               // String [net.minecraft.client.settings.KeyBinding]
+       6: invokestatic  #1383               // Method com/llamalad7/mixinextras/injector/wrapoperation/WrapOperationRuntime.checkArgumentCount:([Ljava/lang/Object;ILjava/lang/String;)V
+       9: aload_0
+      10: dup
+      11: bipush        0
+      13: aaload
+      14: checkcast     #922                // class net/minecraft/client/settings/KeyBinding
+      17: swap
+      18: pop
+      19: invokevirtual #1386               // Method net/minecraft/client/settings/KeyBinding.isKeyDown:()Z
+      22: invokestatic  #1135               // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+      25: areturn
+}

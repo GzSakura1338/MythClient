@@ -1,0 +1,8 @@
+NOVA_PROFILE(Forge1201, 1, "forge-1.20.1", "Minecraft 1.20.1 (Forge)", minecraft)
+NOVA_PROFILE(Lunar189, 2, "lunar-1.8.9", "Lunar Client 1.8.9", minecraft)
+NOVA_PROFILE(Minecraft263, 3, "minecraft-26.3", "Minecraft 26.3 (OpenGL / Vulkan)", minecraft)
+NOVA_PROFILE(Lunar1710, 4, "lunar-1.7.10", "Lunar Client 1.7.10", minecraft)
+NOVA_PROFILE(EaseCation, 5, "easecation", "EaseCation", minecraft)
+NOVA_PROFILE(Cs2, 6, "cs2", "Counter-Strike 2 (DirectX 11)", cs2)
+NOVA_PROFILE(Lunar12111, 7, "lunar-1.21.11", "Lunar Client 1.21.11", minecraft)
+NOVA_PROFILE(NeoForge12110, 8, "neoforge-1.21.10", "Minecraft 1.21.10 (NeoForge)", minecraft)

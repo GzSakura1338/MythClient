@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>NovaInjector</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <Nullable>enable</Nullable>
+    <!-- Intermediate multi-file output stays outside the distribution directory. -->
+    <OutputPath>$(MSBuildThisFileDirectory)..\..\out\injector\ui\</OutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)..\..\out\injector\ui\</BaseOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\out\browser\runtime.zip" LogicalName="Nova.Browser.Runtime" />
+    <EmbeddedResource Include="..\..\out\browser\runtime.sha256" LogicalName="Nova.Browser.Hash" />
+    <EmbeddedResource Include="..\..\shared\ClientProfiles.inc" LogicalName="Nova.ClientProfiles" />
+    <EmbeddedResource Include="..\..\out\injector\native\winmm.dll" LogicalName="Nova.HeyPixel.Winmm" />
+    <EmbeddedResource Include="Assets\HeyPixel\loader-entry.txt" LogicalName="Nova.HeyPixel.Entry" />
+    <Content Include="..\..\out\injector\native\NovaInjector.exe" Link="NovaInjector.exe"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" ExcludeFromSingleFile="false" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250401001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.3916" />
+  </ItemGroup>
+  <Target Name="VerifyNativeInjector" BeforeTargets="Publish">
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\..\out\injector\native\NovaInjector.exe')"
+           Text="Build the native injector first with tools/build-injector.cmd." />
+  </Target>
+</Project>

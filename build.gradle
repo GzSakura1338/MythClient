@@ -1,0 +1,62 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+// All Java sources share one directory.
+sourceSets {
+    main {
+        java {
+            setSrcDirs(['src'])
+            exclude 'resources/**'
+        }
+        resources.setSrcDirs(['src/resources'])
+    }
+    test {
+        java.setSrcDirs([])
+        resources.setSrcDirs([])
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly 'org.projectlombok:lombok:1.18.46'
+    annotationProcessor 'org.projectlombok:lombok:1.18.46'
+
+    implementation include("io.github.spair:imgui-java-binding:${project.imgui_version}")
+    implementation("io.github.spair:imgui-java-lwjgl3:${project.imgui_version}") {
+        transitive = false // Use Minecraft's LWJGL runtime.
+    }
+    include("io.github.spair:imgui-java-lwjgl3:${project.imgui_version}") {
+        transitive = false
+    }
+    runtimeOnly include("io.github.spair:imgui-java-natives-windows:${project.imgui_version}")
+}
+
+processResources {
+    def modVersion = project.version.toString()
+    inputs.property 'version', modVersion
+    filesMatching('fabric.mod.json') {
+        expand version: modVersion
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+    withSourcesJar()
+}

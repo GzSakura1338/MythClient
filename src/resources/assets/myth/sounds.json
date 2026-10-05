@@ -1,0 +1,85 @@
+{
+  "ui.custom": {
+    "sounds": [{ "name": "fabric-sound-api-v1:empty", "stream": true }]
+  },
+  "ui.bodysplat": {
+    "sounds": [
+      "myth:bodysplat"
+    ]
+  },
+  "ui.click": {
+    "sounds": [
+      "myth:click"
+    ]
+  },
+  "ui.cod": {
+    "sounds": [
+      "myth:cod"
+    ]
+  },
+  "ui.css": {
+    "sounds": [
+      "myth:css"
+    ]
+  },
+  "ui.hover": {
+    "sounds": [
+      "myth:hover"
+    ]
+  },
+  "ui.icq": {
+    "sounds": [
+      "myth:icq"
+    ]
+  },
+  "ui.kaban": {
+    "sounds": [
+      "myth:kaban"
+    ]
+  },
+  "ui.neverlose": {
+    "sounds": [
+      "myth:neverlose"
+    ]
+  },
+  "ui.quake": {
+    "sounds": [
+      "myth:quake"
+    ]
+  },
+  "ui.rclick": {
+    "sounds": [
+      "myth:rclick"
+    ]
+  },
+  "ui.stalker": {
+    "sounds": [
+      "myth:stalker"
+    ]
+  },
+  "ui.steam": {
+    "sounds": [
+      "myth:steam"
+    ]
+  },
+  "ui.toolbox": {
+    "sounds": [
+      "myth:toolbox"
+    ]
+  },
+  "ui.vk": {
+    "sounds": [
+      "myth:vk"
+    ]
+  },
+  "ui.warning": {
+    "sounds": [
+      "myth:warning"
+    ]
+  },
+  "ui.whatsapp": {
+    "sounds": [
+      "myth:whatsapp"
+    ]
+  }
+}

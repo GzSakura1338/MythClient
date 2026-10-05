@@ -1,0 +1,56 @@
+# Only bindings bypassed by explicit Lunar12111/GLFW runtime branches.
+# 26.3 SDL/Vulkan backend, never initialized for Lunar.
+FrontendGpuSurface_backend
+VulkanGpuSurface_device
+VulkanGpuSurface_surface
+VulkanGpuSurface_swapchain
+VulkanDevice_vkDevice
+VulkanDevice_graphicsQueue
+VulkanQueue_vkQueue
+VulkanQueue_queueFamilyIndex
+RenderSystem_Field_BACKEND
+GpuBackend_getName
+Minecraft_Field_windowSurface
+# Screen field and GameRenderer pick/camera adapter.
+Minecraft_pick
+Gui_screen
+GameRenderer_gameRenderState
+GameRenderState_Field_levelRenderState
+LevelRenderState_Field_cameraRenderState
+CameraRenderState_Field_pos
+CameraRenderState_Field_xRot
+CameraRenderState_Field_yRot
+CameraRenderState_Field_initialized
+CameraRenderState_Field_projectionMatrix
+CameraRenderState_Field_viewRotationMatrix
+# Pre-26.3 swing and native image lifetime.
+LivingEntity_swing
+ItemStack_getAttackAnimation
+ServerboundPunchPacket_Field_INSTANCE
+class:ServerboundAttackPacket
+NativeImage_isClosed
+# EaseCation-only ABI; Lunar retains modern Vec3/respawn/skin/attributes APIs.
+ec_LerpMotion
+ec_MotionX
+ec_MotionY
+ec_MotionZ
+ec_Spawn
+ec_SkinTexture
+# Lunar moved camera bob to ClientAvatarState.
+ec_Walk
+ec_OldWalk
+ec_Bob
+ec_OldBob
+# GLFW keys are sampled through glfwGetKey, not SDL InputConstants.
+extra:com.mojang.blaze3d.platform.InputConstants.isKeyDown(I)Z
+# Backtrack uses the EaseCation short-delta / PositionMoveRotation overrides.
+extra:net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket.positionLnet/minecraft/world/entity/PositionPath;
+extra:net.minecraft.network.protocol.game.ClientboundMoveEntityPacket.deltaLnet/minecraft/network/protocol/game/VecDelta;
+extra:net.minecraft.network.protocol.game.VecDelta.decode(Lnet/minecraft/network/protocol/game/VecDeltaCodec;)Lnet/minecraft/world/entity/PositionPath;
+extra:net.minecraft.world.entity.PositionPath.endPosition()Lnet/minecraft/world/phys/Vec3;
+# Teams uses ChatFormatting rather than 26.3's Optional TeamColor.
+extra:net.minecraft.world.scores.PlayerTeam.getColor()Ljava/util/Optional;
+extra:net.minecraft.world.scores.TeamColor.rgb()I
+# Documentary 26.3 candidate boundaries, not installed rules. Actual hooks audited separately.
+extra:net/minecraft/client/Minecraft.renderFrame(Z)V
+extra:net/minecraft/client/player/LocalPlayer.sendChanges()V

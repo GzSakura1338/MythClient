@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "myth",
+  "version": "${version}",
+  "name": "Myth",
+  "description": "Myth Fabric mod for Minecraft 26.2.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.myth.Myth"]
+  },
+  "mixins": ["myth.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

@@ -1,0 +1,134 @@
+plugins {
+    id 'fabric-loom' version '1.17-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = new Date().format('yyMMdd')
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/starain.accesswidener")
+
+    runs {
+        client {
+            // DevAuth 默认关闭，靠这个属性打开。不想每次启动都登录就注释掉这行。
+            property 'devauth.enabled', 'true'
+        }
+    }
+}
+
+repositories {
+    // Add repositories to retrieve artifacts from in here.
+    // You should only use this when depending on other mods because
+    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+    // for more information about repositories.
+    maven {
+        name = 'DevAuth'
+        url = 'https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1'
+        content {
+            includeGroup 'me.djtheredstoner'
+        }
+    }
+}
+
+dependencies {
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    implementation("org.projectlombok:lombok:1.18.46")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
+
+    // 开发环境登录正版账号用，只在 runClient 时生效，不会打进发布的 jar。
+    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
+
+    implementation include('io.github.humbleui:types:0.2.0')
+    implementation include('io.github.humbleui:skija-shared:0.116.4')
+    implementation include('io.github.humbleui:skija-windows-x64:0.116.4')
+    implementation include('io.github.humbleui:skija-linux-x64:0.116.4')
+    implementation include('io.github.humbleui:skija-macos-x64:0.116.4')
+    implementation include('io.github.humbleui:skija-macos-arm64:0.116.4')
+
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "loader_version", project.loader_version
+    filteringCharset "UTF-8"
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version,
+                "minecraft_version": project.minecraft_version,
+                "loader_version": project.loader_version
+    }
+}
+
+def targetJavaVersion = 17
+tasks.withType(JavaCompile).configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    // If Javadoc is generated, this must be specified in that task too.
+    it.options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        it.options.release.set(targetJavaVersion)
+    }
+}
+
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+// configure the maven publication
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+        // Notice: This block does NOT have the same function as the block in the top level.
+        // The repositories here will be used for publishing your artifact, not for
+        // retrieving dependencies.
+    }
+}
+
+tasks.register('extractRuntimeClasspath', Copy) {//这行gradle任务可以导出编译时所有用到的jar出来
+    from configurations.runtimeClasspath
+    into "$buildDir/runtimeClasspath"
+}
+
+tasks.register('updateVersionInJava') {
+    doLast {
+        def starainFile = file("src/main/java/today/starain/Starain.java")
+        def content = starainFile.text
+        def newContent = content.replaceAll(/public static final String VERSION = "[^"]*";/, "public static final String VERSION = \"${project.version}\";")
+        if (content != newContent) {
+            starainFile.text = newContent
+        }
+    }
+}

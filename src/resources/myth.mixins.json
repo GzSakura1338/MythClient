@@ -1,0 +1,26 @@
+{
+  "required": true,
+  "package": "dev.myth.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "MixinMinecraft",
+    "MixinKeyboardHandler",
+    "MixinMouseHandler",
+    "MixinClientPacketListener",
+    "MixinCommandSuggestions",
+    "MixinConnection",
+    "MixinHud",
+    "MixinLocalPlayer",
+    "MixinKeyboardInput",
+    "MixinEntity",
+    "MixinLivingEntity",
+    "MixinLivingEntityRenderer",
+    "MixinLightmapRenderStateExtractor",
+    "MixinPlayer",
+    "MixinItem",
+    "MixinMultiPlayerGameMode"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
