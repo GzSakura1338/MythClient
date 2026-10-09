@@ -1,5 +1,0 @@
-add_library(NovaProxy STATIC ProxyService.cpp)
-target_include_directories(NovaProxy PUBLIC ${PROJECT_SOURCE_DIR}/src)
-target_compile_options(NovaProxy PRIVATE /utf-8)
-target_link_libraries(NovaProxy PUBLIC ws2_32 iphlpapi crypt32)
-target_link_libraries(NovaClientBase PRIVATE NovaProxy)

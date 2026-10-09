@@ -7,6 +7,7 @@ import dev.myth.Myth;
 import dev.myth.event.impl.RayTraceEvent;
 import dev.myth.event.impl.StrafeEvent;
 import dev.myth.event.impl.StuckInBlockEvent;
+import dev.myth.model.render.NoRender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,5 +46,13 @@ public abstract class MixinEntity {
     private float myth$strafe(float yaw) {
         return (Object) this == Minecraft.getInstance().player
                 ? Myth.EVENT_MANAGER.call(new StrafeEvent(yaw)).getYaw() : yaw;
+    }
+
+    /** NoRender Interpolation, cancelled for every entity exactly as Mio does it. */
+    @Inject(method = "lerpPositionAndRotationStep", at = @At("HEAD"), cancellable = true)
+    private void myth$interpolation(int stepsToTarget, double targetX, double targetY, double targetZ,
+                                    double targetYRot, double targetXRot, CallbackInfo ci) {
+        NoRender noRender = NoRender.active();
+        if (noRender != null && noRender.interpolation.get()) ci.cancel();
     }
 }

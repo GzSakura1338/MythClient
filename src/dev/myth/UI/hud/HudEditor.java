@@ -21,6 +21,7 @@ public final class HudEditor {
     private HudElement resizing;
     private boolean draggingPanel, overPanel;
     private float dragX, dragY, width, height, panelWidth, panelHeight, mouseX, mouseY;
+    private float laidOutWidth, laidOutHeight;
 
     public HudEditor(HudManager manager, CategoryIcons icons, ClickGui controls) {
         this.manager = manager; this.icons = icons; this.controls = controls; safeArea = new HudSafeArea(manager);
@@ -31,6 +32,14 @@ public final class HudEditor {
         width = ImGui.getIO().getDisplaySizeX(); height = ImGui.getIO().getDisplaySizeY();
         mouseX = ImGui.getMousePosX(); mouseY = ImGui.getMousePosY();
         panelWidth = options.width(); panelHeight = controls.prepareHudPanel();
+        // Elements are stored normalized, but the category panel is not: a shrunken window would
+        // leave it outside the viewport, with no way to drag it back.
+        if (width != laidOutWidth || height != laidOutHeight) {
+            laidOutWidth = width; laidOutHeight = height;
+            manager.setPanel(Math.clamp(manager.getPanelX(), 0, Math.max(0, width - panelWidth)),
+                    Math.clamp(manager.getPanelY(), Math.min(0, height - panelHeight), Math.max(0, height - 14)),
+                    manager.isPanelExpanded());
+        }
         overPanel = mouseX >= manager.getPanelX() && mouseX <= manager.getPanelX() + panelWidth
                 && mouseY >= manager.getPanelY() && mouseY <= manager.getPanelY() + panelHeight;
         ImDrawList draw = ImGui.getBackgroundDrawList();

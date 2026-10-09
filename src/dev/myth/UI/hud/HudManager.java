@@ -68,6 +68,7 @@ public final class HudManager {
         register(new dev.myth.UI.hud.Map());
         register(new Music());
         register(new TextRadar());
+        register(new TargetHud());
         Myth.EVENT_MANAGER.register(data);
         Myth.EVENT_MANAGER.register(this); initialized = true;
     }
@@ -184,7 +185,7 @@ public final class HudManager {
         if (stored != null) for (HudElement element : elements.values()) if (stored.has(element.getId()))
             states.add(decodeElement(element, stored.getAsJsonObject(element.getId())));
         return new State(flag(root, "enabled", enabled), root.has("key") ? Keybind.parseSavedKey(root.get("key").getAsString()) : keybind.getBoundKey(),
-                root.has("mode") ? Keybind.Mode.parse(root.get("mode").getAsString()) : keybind.getMode(), decodeSettings(root.getAsJsonObject("settings"), settings),
+                root.has("mode") ? Keybind.Mode.parse(root.get("mode").getAsString()) : keybind.getMode(), decodeSettings(root.getAsJsonObject("settings"), settings, "hud"),
                 coordinate(panel, "x", panelX, -100000, 100000), coordinate(panel, "y", panelY, -100000, 100000), flag(panel, "expanded", panelExpanded), List.copyOf(states));
     }
     public void apply(State state, JsonObject source) {
@@ -205,12 +206,17 @@ public final class HudManager {
         int index = placement.has("index") ? placement.get("index").getAsInt() : Math.max(0, groups.get(element.getAnchor()).indexOf(element));
         if (index < 0 || index > 10000) throw new IllegalArgumentException("Invalid HUD order");
         return new ElementState(element, flag(root, "enabled", element.isEnabled()), placement.has("anchor") ? HudAnchor.parse(placement.get("anchor").getAsString()) : element.getAnchor(), index,
-                coordinate(placement, "x", element.getRelativeX(), 0, 1), coordinate(placement, "y", element.getRelativeY(), 0, 1), decodeSettings(root.getAsJsonObject("settings"), element.getSettings()));
+                coordinate(placement, "x", element.getRelativeX(), 0, 1), coordinate(placement, "y", element.getRelativeY(), 0, 1),
+                decodeSettings(root.getAsJsonObject("settings"), element.getSettings(), "hud." + element.getId()));
     }
-    private static List<SettingState> decodeSettings(JsonObject data, List<Setting<?>> settings) {
+    private static List<SettingState> decodeSettings(JsonObject data, List<Setting<?>> settings, String owner) {
         List<SettingState> values = new ArrayList<>();
-        if (data != null) for (Setting<?> setting : settings) if (!setting.isAction() && data.has(setting.getId()))
-            values.add(new SettingState(setting, setting.decode(data.get(setting.getId()))));
+        if (data == null) return List.of();
+        for (Setting<?> setting : settings) {
+            if (setting.isAction() || !data.has(setting.getId())) continue;
+            Setting.State next = setting.decodeOrKeep(data.get(setting.getId()), owner);
+            if (next != null) values.add(new SettingState(setting, next));
+        }
         return List.copyOf(values);
     }
     private static JsonObject objectCopy(JsonObject root, String name) { return root.has(name) ? root.getAsJsonObject(name).deepCopy() : new JsonObject(); }

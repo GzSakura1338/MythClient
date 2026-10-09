@@ -47,6 +47,7 @@ public final class UiManager {
     private boolean closing;
     private long transition;
     private String failure;
+    private boolean reported;
     private JsonObject persisted = new JsonObject();
 
     public void initialize() {
@@ -225,9 +226,16 @@ public final class UiManager {
                     if (isOpen()) gui.render();
                 }
             }, physicalScale, options.samples());
-        } catch (RuntimeException | LinkageError exception) {
+            reported = false;
+        } catch (LinkageError exception) {
             failure = "Could not render ClickGUI. See the game log.";
             Myth.LOGGER.error(failure, exception); requestClose();
+        } catch (RuntimeException exception) {
+            // A single bad frame must not latch. Latching left the HUD and the ClickGUI blank for the
+            // rest of the session, because only reopening the GUI clears the failure.
+            if (!reported) { reported = true; Myth.LOGGER.error("Could not render the Myth overlay", exception); }
+            renderer.invalidateBlur();
+            if (isEditing()) requestClose();
         }
     }
 
@@ -248,7 +256,8 @@ public final class UiManager {
         try { model.toggle(); } catch (RuntimeException exception) { Myth.LOGGER.error("Could not toggle {}", model.getId(), exception); }
     }
     public void save() {
-        try { Myth.CONFIG_MANAGER.saveConfig(); }
+        // Implicit: a failed startup load keeps its file instead of taking our defaults.
+        try { Myth.CONFIG_MANAGER.saveIfLoaded(); }
         catch (IOException | RuntimeException exception) { Myth.LOGGER.error("Could not save UI config", exception); }
     }
 
@@ -279,8 +288,8 @@ public final class UiManager {
 
     public State decode(JsonObject root) {
         List<SettingState> settings = new ArrayList<>();
-        decodeSettings(root.getAsJsonObject("options"), options.getSettings(), settings);
-        decodeSettings(root.getAsJsonObject("fonts"), fonts.getSettings(), settings);
+        decodeSettings(root.getAsJsonObject("options"), options.getSettings(), settings, "ui");
+        decodeSettings(root.getAsJsonObject("fonts"), fonts.getSettings(), settings, "fonts");
         for (SettingState state : settings) if (state.setting() == options.prefix) {
             String value = (String) state.state().value();
             if (value.isBlank() || value.length() > 8 || value.chars().anyMatch(Character::isWhitespace)) throw new IllegalArgumentException("Invalid command prefix");
@@ -324,8 +333,15 @@ public final class UiManager {
                 root.has("fontMode") ? Keybind.Mode.parse(root.get("fontMode").getAsString()) : fontKey.getMode(), bool(root, "fontEnabled", fonts.isEnabled()));
     }
     private void decodeSettings(JsonObject data, List<Setting<?>> settings, List<SettingState> states) {
+        decodeSettings(data, settings, states, "ui");
+    }
+    private void decodeSettings(JsonObject data, List<Setting<?>> settings, List<SettingState> states, String owner) {
         if (data == null) return;
-        for (Setting<?> setting : settings) if (data.has(setting.getId())) states.add(new SettingState(setting, setting.decode(data.get(setting.getId()))));
+        for (Setting<?> setting : settings) {
+            if (!data.has(setting.getId())) continue;
+            Setting.State next = setting.decodeOrKeep(data.get(setting.getId()), owner);
+            if (next != null) states.add(new SettingState(setting, next));
+        }
     }
     private static boolean bool(JsonObject root, String key, boolean fallback) {
         JsonElement value = root.get(key); if (value == null) return fallback;

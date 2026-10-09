@@ -30,7 +30,9 @@ public final class ToggleCommand extends Command {
         }
         Model model = findModel(args[1]);
         model.toggle();
-        Myth.CONFIG_MANAGER.saveConfig();
+        if (!Myth.CONFIG_MANAGER.saveIfLoaded()) {
+            ChatUtils.addChatMessage("§7Not saved: §c", Myth.CONFIG_MANAGER.getCurrentConfig(), " §7failed to load this session");
+        }
     }
 
     @Override

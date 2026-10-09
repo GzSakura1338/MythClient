@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import dev.myth.Myth;
 import java.awt.Color;
 import java.util.List;
 import java.util.Objects;
@@ -100,7 +101,11 @@ public final class Setting<T> {
         if (!Double.isFinite(step) || step <= 0) throw new IllegalArgumentException("Invalid number step");
         this.step = step; return this;
     }
-    public Setting<T> group() { group = true; return this; }
+    /** Only the boolean control reacts to a right click by expanding, so a group has to be one. */
+    public Setting<T> group() {
+        if (kind != Kind.BOOLEAN) throw new IllegalArgumentException("Only a boolean setting can be a group: " + id);
+        group = true; return this;
+    }
     public Setting<T> action() { action = true; return this; }
     public String getId() { return id; }
     public String getName() { return name; }
@@ -179,6 +184,20 @@ public final class Setting<T> {
             data.addProperty("rainbow", rainbow); data.addProperty("sync", sync);
         }
         return data;
+    }
+
+    /**
+     * One unreadable value must not cost the whole profile. A setting's value is isolated state,
+     * so the caller skips it and keeps the live one; returning null says exactly that. Schema
+     * drift lands here: a saved enum choice that no longer exists is not a corrupt config.
+     */
+    public State decodeOrKeep(JsonElement element, String owner) {
+        try {
+            return decode(element);
+        } catch (RuntimeException exception) {
+            Myth.LOGGER.warn("Myth config kept {}.{} = {} ({})", owner, id, value, exception.getMessage());
+            return null;
+        }
     }
 
     public State decode(JsonElement element) {

@@ -1,0 +1,26 @@
+// Standalone instance check for the AutoCrystal Support rule. Sources live outside build/ so a clean
+// does not take the harness with it; only the run directory and the report are generated.
+//   .\gradlew.bat -I scripts/crystal-support-validation/validation.gradle runCrystalSupportValidation --console=plain --no-configuration-cache
+allprojects { afterEvaluate {
+    loom.runs.create('crystalSupportValidation') {
+        client()
+        runDir('build/crystal-support-validation/run')
+        property 'devauth.enabled', 'false'
+        vmArg '-Dmyth.validation.root=' + rootDir.toPath().resolve('build/crystal-support-validation').toString().replace('\\', '/')
+    }
+    def compile = tasks.register('compileCrystalSupportValidation', JavaCompile) {
+        dependsOn tasks.named('classes')
+        source fileTree('scripts/crystal-support-validation/src') { include '**/*.java' }
+        classpath = sourceSets.main.compileClasspath + sourceSets.main.output
+        destinationDirectory = layout.buildDirectory.dir('crystal-support-validation/classes')
+        options.encoding = 'UTF-8'; options.release = 25
+    }
+    def jar = tasks.register('jarCrystalSupportValidation', Jar) {
+        dependsOn compile
+        from layout.buildDirectory.dir('crystal-support-validation/classes')
+        from 'scripts/crystal-support-validation/resources'
+        archiveFileName = 'crystal-support-validation.jar'
+        destinationDirectory = layout.buildDirectory.dir('crystal-support-validation/run/mods')
+    }
+    tasks.named('runCrystalSupportValidation').configure { dependsOn jar }
+} }

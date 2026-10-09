@@ -1,13 +1,16 @@
 package dev.myth.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.myth.Myth;
 import dev.myth.event.impl.RotationAnimationEvent;
+import dev.myth.model.render.NoRender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,6 +39,14 @@ public abstract class MixinLivingEntityRenderer {
             return original.call(delta, event.getLastYaw(), event.getYaw());
         }
         return original.call(delta, start, end);
+    }
+
+    /** NoRender Hurt: Mio swaps the red overlay row out of the overlay texture lookup. */
+    @ModifyExpressionValue(method = "getOverlayCoords", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/texture/OverlayTexture;v(Z)I"))
+    private static int myth$hurtOverlay(int original) {
+        NoRender noRender = NoRender.active();
+        return noRender != null && noRender.hurt.get() ? OverlayTexture.v(false) : original;
     }
 
     @WrapOperation(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V",

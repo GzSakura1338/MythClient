@@ -1,0 +1,26 @@
+// Standalone instance check for the NoRender port. Sources live outside build/ so a clean
+// does not take the harness with it; only the run directory and the report are generated.
+//   .\gradlew.bat -I scripts/norender-validation/validation.gradle runNoRenderValidation --console=plain --no-configuration-cache
+allprojects { afterEvaluate {
+    loom.runs.create('noRenderValidation') {
+        client()
+        runDir('build/norender-validation/run')
+        property 'devauth.enabled', 'false'
+        vmArg '-Dmyth.validation.root=' + rootDir.toPath().resolve('build/norender-validation').toString().replace('\\', '/')
+    }
+    def compile = tasks.register('compileNoRenderValidation', JavaCompile) {
+        dependsOn tasks.named('classes')
+        source fileTree('scripts/norender-validation/src') { include '**/*.java' }
+        classpath = sourceSets.main.compileClasspath + sourceSets.main.output
+        destinationDirectory = layout.buildDirectory.dir('norender-validation/classes')
+        options.encoding = 'UTF-8'; options.release = 25
+    }
+    def jar = tasks.register('jarNoRenderValidation', Jar) {
+        dependsOn compile
+        from layout.buildDirectory.dir('norender-validation/classes')
+        from 'scripts/norender-validation/resources'
+        archiveFileName = 'norender-validation.jar'
+        destinationDirectory = layout.buildDirectory.dir('norender-validation/run/mods')
+    }
+    tasks.named('runNoRenderValidation').configure { dependsOn jar }
+} }

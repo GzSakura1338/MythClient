@@ -2,11 +2,18 @@ package dev.myth;
 
 import dev.myth.model.ModelManager;
 import dev.myth.model.combat.KillAura;
-import dev.myth.model.combat.AutoCrystal;
+import dev.myth.model.combat.Velocity;
 import dev.myth.model.misc.FakePlayer;
 import dev.myth.model.player.Sprint;
 import dev.myth.model.player.Scaffold;
+import dev.myth.model.player.InvManager;
+import dev.myth.model.player.ChestStealer;
 import dev.myth.model.render.FullBright;
+import dev.myth.model.render.Animations;
+import dev.myth.model.render.ViewModel;
+import dev.myth.model.render.NoRender;
+import dev.myth.model.render.TimeChanger;
+import dev.myth.model.render.Shader;
 import dev.myth.utils.rotation.RotationManager;
 import dev.myth.event.api.EventManager;
 import dev.myth.event.EventHooks;
@@ -15,6 +22,7 @@ import dev.myth.command.Notifications;
 import dev.myth.config.ConfigManager;
 import dev.myth.UI.UiManager;
 import dev.myth.UI.WorldEsp;
+import dev.myth.UI.EntityShader;
 import dev.myth.UI.hud.HudManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.api.ClientModInitializer;
@@ -30,6 +38,7 @@ public final class Myth implements ClientModInitializer {
     public static final ConfigManager CONFIG_MANAGER = new ConfigManager();
     public static final HudManager HUD_MANAGER = new HudManager();
     public static final WorldEsp WORLD_ESP = new WorldEsp();
+    public static final EntityShader ENTITY_SHADER = new EntityShader();
     public static final UiManager UI_MANAGER = new UiManager();
 
     @Override
@@ -38,10 +47,17 @@ public final class Myth implements ClientModInitializer {
         EVENT_MANAGER.register(RotationManager.newInstance());
         MODEL_MANAGER.register(new Sprint());
         MODEL_MANAGER.register(new Scaffold());
+        MODEL_MANAGER.register(new InvManager());
+        MODEL_MANAGER.register(new ChestStealer());
         MODEL_MANAGER.register(new KillAura());
-        MODEL_MANAGER.register(new AutoCrystal());
+        MODEL_MANAGER.register(new Velocity());
         MODEL_MANAGER.register(new FakePlayer());
         MODEL_MANAGER.register(new FullBright());
+        MODEL_MANAGER.register(new Animations());
+        MODEL_MANAGER.register(new ViewModel());
+        MODEL_MANAGER.register(new Shader());
+        MODEL_MANAGER.register(new TimeChanger());
+        MODEL_MANAGER.register(new NoRender());
         MODEL_MANAGER.register(new Notifications()).setEnabled(true, false);
         MODEL_MANAGER.initialize();
         HUD_MANAGER.initialize();
@@ -53,6 +69,7 @@ public final class Myth implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             CONFIG_MANAGER.stop();
             MODEL_MANAGER.disableAll();
+            ENTITY_SHADER.close();
             UI_MANAGER.stop();
         });
         LOGGER.info("Myth initialized");

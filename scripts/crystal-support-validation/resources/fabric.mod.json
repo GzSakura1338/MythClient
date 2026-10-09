@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "myth_crystal_support_validation",
+  "version": "1.0.0",
+  "name": "Myth Crystal Support Validation",
+  "description": "Standalone instance check for AutoCrystal's Support placement rule.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.myth.validation.CrystalSupportValidation"]
+  },
+  "depends": {
+    "myth": "*"
+  }
+}

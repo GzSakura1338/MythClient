@@ -8,6 +8,7 @@ import dev.myth.event.api.annotations.EventTarget;
 import dev.myth.event.impl.GameTickEvent;
 import dev.myth.event.impl.PlayerTickEvent;
 import dev.myth.event.impl.RenderSkiaEvent;
+import dev.myth.event.impl.PacketEvent;
 import dev.myth.event.impl.RespawnEvent;
 import dev.myth.event.impl.MoveInputEvent;
 import dev.myth.model.Category;
@@ -27,6 +28,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -69,6 +78,10 @@ public final class KillAura extends Model implements Wrapper {
     public final Setting<Integer> switchDelay = addSetting(Setting.integer("switchDelay", "Switch delay", 100, 0, 500)
             .unit("ms").visibleWhen(() -> mode.get().equals("Switch")));
     public final Setting<String> priority = addSetting(Setting.choice("priority", "Priority", "Range", List.of("Health", "FoV", "Range", "None")));
+    public final Setting<String> abMode = addSetting(Setting.choice("abMode", "Auto block mode", "None",
+            List.of("None", "Fake", "Blink1")));
+    public final Setting<Integer> blinkTicks = addSetting(Setting.integer("blinkTicks", "Blink ticks", 3, 1, 5)
+            .visibleWhen(() -> abMode.get().equals("Blink1")));
     public final Setting<Boolean> targetOptions = addSetting(Setting.bool("targets", "Targets", false).group().action());
     public final Setting<Boolean> players = addSetting(Setting.bool("players", "Player", true).visibleWhen(targetOptions::isExpanded));
     public final Setting<Boolean> invisibles = addSetting(Setting.bool("invisibles", "Invisibles", false).visibleWhen(targetOptions::isExpanded));
@@ -76,6 +89,10 @@ public final class KillAura extends Model implements Wrapper {
     public final Setting<Boolean> mobs = addSetting(Setting.bool("mobs", "Mobs", false).visibleWhen(targetOptions::isExpanded));
     public final Setting<Boolean> villagers = addSetting(Setting.bool("villagers", "Villager", false).visibleWhen(targetOptions::isExpanded));
     // Preserve Starain TimerUtils' initial zero timestamp and wall-clock switch interval.
+    /** Starain KillAura blink queue: outgoing packets held while the block window is open. */
+    private final java.util.Queue<Packet<?>> blinkPackets = new java.util.concurrent.ConcurrentLinkedQueue<>();
+    private boolean blinking;
+    private boolean flushingBlink;
     private long lastSwitchTime;
     private long lastAttackTime;
     private int attacks;
@@ -83,6 +100,7 @@ public final class KillAura extends Model implements Wrapper {
     public KillAura() {
         super("killaura", "KillAura", Category.COMBAT);
         setDescription("Automatically aims at and attacks selected targets.");
+        instance = this;
     }
 
     @EventTarget
@@ -97,6 +115,7 @@ public final class KillAura extends Model implements Wrapper {
                         // Retain Starain's original signed pitch/yaw FOV comparison.
                         && Mth.wrapDegrees(mc.player.getXRot() - RotationUtils.calculate(entity).getYaw()) <= fov.get());
         targets = stream.collect(Collectors.toList());
+        blinking = false;
         if (priority.get().equals("Range")) {
             targets.sort(Comparator.comparingDouble(entity -> entity.distanceTo(mc.player)));
         } else if (priority.get().equals("FoV")) {
@@ -115,6 +134,7 @@ public final class KillAura extends Model implements Wrapper {
         }
         if (targetNumber >= targets.size()) targetNumber = 0;
         if (targets.isEmpty()) return;
+        if (abMode.get().equals("Blink1") && holdingSword()) blinking = true;
 
         Entity target = targets.get(targetNumber);
         Rotation calculate = RotationUtils.calculate(target, true, aimRange.get());
@@ -158,7 +178,7 @@ public final class KillAura extends Model implements Wrapper {
         }
         while (attacks > 0) {
             attacks--;
-            if (mc.player.isUsingItem()) return;
+            if (mc.player.isUsingItem() && !abMode.get().equals("Blink1")) return;
             if (mc.hitResult instanceof EntityHitResult hit) {
                 mc.gameMode.attack(mc.player, hit.getEntity());
                 mc.player.swing(InteractionHand.MAIN_HAND);
@@ -230,9 +250,73 @@ public final class KillAura extends Model implements Wrapper {
         return false;
     }
 
-    @Override public void onDisable() { clearTargets(); }
+    // ---------------------------------------------------------------- Starain 1.21.11 autoblock
+
+    private static KillAura instance;
+
+    public static boolean holdingSword() {
+        return mc.player != null && mc.player.getMainHandItem().is(ItemTags.SWORDS);
+    }
+
+    /** Read by Animations. Fake is nothing but this; Blink1 also sends. */
+    public boolean isBlocking() {
+        return !abMode.get().equals("None") && hasTargets() && holdingSword();
+    }
+
+    public static boolean blockingNow() {
+        return instance != null && instance.isEnabled() && instance.isBlocking();
+    }
+
+    /**
+     * Starain Blink1: hold everything outgoing, and once the window is blinkTicks movement
+     * packets wide send the block, let the backlog go, then release. The use and the release go
+     * out through the normal send so this listener sees them too, exactly as the source does -
+     * the release therefore rides out at the head of the next flush.
+     */
+    @EventTarget public void onAutoBlockPacket(PacketEvent event) {
+        if (flushingBlink || mc.player == null) return;
+        if (event.getType() == EventType.INCOMING) {
+            if (event.getPacket() instanceof ClientboundDisconnectPacket) {
+                blinking = false;
+                blinkPackets.clear();
+            }
+            return;
+        }
+        if (!blinking) { flushBlink(); return; }
+        if (event.getPacket() instanceof ServerboundMovePlayerPacket && mc.getConnection() != null) {
+            int moves = 0;
+            for (Packet<?> held : blinkPackets) if (held instanceof ServerboundMovePlayerPacket) moves++;
+            if (moves >= blinkTicks.get()) {
+                var rotation = RotationManager.getRotation();
+                mc.getConnection().send(new ServerboundUseItemPacket(InteractionHand.MAIN_HAND, 0,
+                        rotation.getYaw(), rotation.getPitch()));
+                flushBlink();
+                mc.getConnection().send(new ServerboundPlayerActionPacket(
+                        ServerboundPlayerActionPacket.Action.RELEASE_USE_ITEM, BlockPos.ZERO, Direction.DOWN));
+            }
+        }
+        blinkPackets.add(event.getPacket());
+        event.setCancelled(true);
+    }
+
+    /** Starain NetworkUtils.sendPacketNoEvent: the replay must not be captured again. */
+    private void flushBlink() {
+        if (blinkPackets.isEmpty()) return;
+        if (mc.getConnection() == null) { blinkPackets.clear(); return; }
+        flushingBlink = true;
+        try {
+            Packet<?> packet;
+            while ((packet = blinkPackets.poll()) != null) mc.getConnection().getConnection().send(packet);
+        } catch (RuntimeException exception) {
+            Myth.LOGGER.error("KillAura could not flush its blink queue", exception);
+        } finally {
+            flushingBlink = false;
+        }
+    }
+
+    @Override public void onDisable() { clearTargets(); flushBlink(); }
     @EventTarget public void onRespawn(RespawnEvent event) { clearTargets(); }
-    private void clearTargets() { targets = null; attacks = 0; targetNumber = 0; criticalSprint.reset(); }
+    private void clearTargets() { targets = null; attacks = 0; targetNumber = 0; blinking = false; criticalSprint.reset(); }
     public boolean isSwitchMode() { return mode.get().equals("Switch"); }
     public static Entity getTarget() {
         if (targets == null || targets.isEmpty() || targetNumber < 0 || targetNumber >= targets.size()) return null;

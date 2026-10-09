@@ -79,6 +79,11 @@ public final class EventManager {
             try {
                 listener.method().invoke(listener.target(), event);
             } catch (InvocationTargetException exception) {
+                // Netty only prints the message of whatever escapes channelRead0, so an INCOMING
+                // listener that throws disconnects the player with no stack trace anywhere. Log the
+                // cause here; the throw itself still decides what the hook does.
+                dev.myth.Myth.LOGGER.error("Failed to dispatch {} to {}", event.getClass().getSimpleName(),
+                        listener.method(), exception.getCause());
                 throw new RuntimeException("Failed to dispatch " + event.getClass().getName()
                         + " to " + listener.method(), exception.getCause());
             } catch (ReflectiveOperationException exception) {

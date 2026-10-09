@@ -4,3 +4,11 @@ build/
 run/
 out/
 *.iml
+
+# Reference client sources used only for porting; not ours to publish.
+skid/
+# Porting records and the handoff notes stay local.
+docs/
+# Stray local directories.
+My/
+logs/

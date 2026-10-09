@@ -1,9 +1,0 @@
-httpPort: 8080
-socketPort: 12345
-aesSecret: "YourSuperSecretKeyPleaseChangeIt"
-adminUsername: "admin"
-adminPassword: "admin"
-uploadKey: "null"
-getNativeAesSecret: "null"
-getNativeRsaPublicSecret: "null"
-getNativeRsaPrivateSecret: "null"

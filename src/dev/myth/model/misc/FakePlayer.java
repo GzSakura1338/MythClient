@@ -1,6 +1,7 @@
 package dev.myth.model.misc;
 
 import com.mojang.authlib.GameProfile;
+import dev.myth.Myth;
 import dev.myth.UI.setting.Setting;
 import dev.myth.event.api.EventType;
 import dev.myth.event.api.annotations.EventTarget;
@@ -68,6 +69,24 @@ public final class FakePlayer extends Model {
         copy.setOnGround(client.player.onGround());
     }
 
+    /**
+     * The client entity storage belongs to the server: a level swap, a section the server stops
+     * tracking, or an id the server reuses all drop a client-only entity without telling anyone,
+     * which leaves the module enabled with nothing to hit. Enabled has to mean the copy is there.
+     *
+     * <p>onEnable also runs while the config is restored, before a level exists, so this doubles as
+     * the deferred spawn for that case.
+     */
+    private void ensureSpawned() {
+        var client = Minecraft.getInstance();
+        if (client.level == null) return;
+        if (copy != null && !copy.isRemoved() && client.level.getEntity(ENTITY_ID) == copy) return;
+        boolean lost = copy != null;
+        copy = null;
+        spawn();
+        if (lost && copy != null) Myth.LOGGER.info("FakePlayer copy was dropped from the level; respawned it");
+    }
+
     private void remove() {
         var client = Minecraft.getInstance();
         if (copy != null && client.level != null) client.level.removeEntity(ENTITY_ID, Entity.RemovalReason.DISCARDED);
@@ -81,6 +100,7 @@ public final class FakePlayer extends Model {
             if (record.get()) frames.add(Frame.of(player));
             return;
         }
+        ensureSpawned();
         if (copy == null || !play.get() || frames.isEmpty()) return;
         current = (current + 1) % frames.size();
         frames.get(current).apply(copy);
@@ -93,9 +113,12 @@ public final class FakePlayer extends Model {
 
     /** The copy exists only here; letting its id reach the server would be a bogus attack. */
     @EventTarget private void onPacket(PacketEvent event) {
-        if (copy == null || event.getType() != EventType.OUTGOING) return;
+        if (event.getType() != EventType.OUTGOING) return;
         if (!(event.getPacket() instanceof ServerboundAttackPacket packet) || packet.entityId() != ENTITY_ID) return;
+        // Cancel before the copy is consulted. A real server answers an unknown entity id with a
+        // protocol error, so a stale attack must never go out just because the copy went missing.
         event.setCancelled(true);
+        if (copy == null) return;
         // 26.2 routes client-side damage through hurtClient, which moves no health, so Mio's
         // hit has to be applied here for the totem and hurt animation to happen at all.
         var player = Minecraft.getInstance().player;

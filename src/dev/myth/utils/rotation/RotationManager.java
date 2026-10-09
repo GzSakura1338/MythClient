@@ -3,6 +3,7 @@ package dev.myth.utils.rotation;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
+import dev.myth.Myth;
 import dev.myth.access.MinecraftAccess;
 import net.minecraft.util.Mth;
 import dev.myth.event.api.EventType;
@@ -21,6 +22,8 @@ public class RotationManager implements Wrapper {
     @Setter
     @Getter
     private static boolean active, smoothed;
+    /** One shot, so a per-frame failure cannot flood the log. */
+    private static boolean reportedSmoothFailure;
     private static double rotationSpeed;
     private static Function<Rotation, Boolean> raycast;
     private static float randomAngle;
@@ -96,7 +99,13 @@ public class RotationManager implements Wrapper {
 
             ((MinecraftAccess) mc).myth$pick(1.0F);
         } catch (Exception e) {
-
+            // Starain swallows this. The re-pick is what puts the silent rotation into
+            // Minecraft.hitResult, so anything thrown here leaves hitResult on the previous frame
+            // and every module that attacks through it goes quiet with nothing in the log.
+            if (!reportedSmoothFailure) {
+                reportedSmoothFailure = true;
+                Myth.LOGGER.error("Rotation smoothing failed; Minecraft.hitResult is stale this frame", e);
+            }
         }
     }
 

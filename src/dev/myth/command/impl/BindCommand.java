@@ -22,7 +22,9 @@ public final class BindCommand extends Command {
         var key = BindUtils.parse(args[2]);
         var binding = Myth.MODEL_MANAGER.getKeybind(model.getId()).orElseThrow();
         binding.setKey(key);
-        Myth.CONFIG_MANAGER.saveConfig();
+        if (!Myth.CONFIG_MANAGER.saveIfLoaded()) {
+            ChatUtils.addChatMessage("§7Not saved: §c", Myth.CONFIG_MANAGER.getCurrentConfig(), " §7failed to load this session");
+        }
         if (key.equals(com.mojang.blaze3d.platform.InputConstants.UNKNOWN)) {
             ChatUtils.addChatMessage("§7Module §b", model.getName(), " §7unbound");
         } else {

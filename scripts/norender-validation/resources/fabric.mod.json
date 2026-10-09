@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "myth_norender_validation",
+  "version": "1.0.0",
+  "name": "Myth NoRender Validation",
+  "description": "Standalone instance check for the NoRender port.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.myth.validation.NoRenderValidation"]
+  },
+  "depends": {
+    "myth": "*"
+  }
+}

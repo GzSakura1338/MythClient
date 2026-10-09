@@ -24,6 +24,8 @@ public final class ConfigManager {
     private boolean initialized;
     private boolean ready;
     private boolean stopping;
+    /** The startup load failed, so the live state is all defaults and must not be written back. */
+    private boolean loadFailed;
     private int ticks;
 
     public void initialize() {
@@ -39,8 +41,13 @@ public final class ConfigManager {
                 saveConfig();
             }
         } catch (IOException | RuntimeException exception) {
-            // Preserve a broken profile until an explicit load or save succeeds.
-            Myth.LOGGER.error("Could not initialize Myth config", exception);
+            // Preserve a broken profile until an explicit load or save succeeds. Every implicit
+            // save is blocked until then, otherwise closing the GUI once writes the defaults we
+            // are sitting on straight over the file the user wanted to keep.
+            loadFailed = true;
+            Myth.LOGGER.error("Could not initialize Myth config. Myth is running on defaults and will not"
+                    + " overwrite config/myth/{}.json; fix it or run .config save <name> to replace it.",
+                    currentConfig, exception);
         }
         Myth.EVENT_MANAGER.register(this);
         Runtime.getRuntime().addShutdownHook(new Thread(this::saveSnapshot, "Myth-Config-Save"));
@@ -69,6 +76,19 @@ public final class ConfigManager {
         saveConfig(currentConfig);
     }
 
+    /**
+     * For saves the user did not ask for: closing the GUI, a toggle, a bind, the autosave tick.
+     * Returns false when a failed startup load is being preserved. Only an explicit
+     * {@code .config save} or a successful {@code .config load} clears that.
+     */
+    public synchronized boolean saveIfLoaded() throws IOException {
+        if (loadFailed) {
+            return false;
+        }
+        saveConfig();
+        return true;
+    }
+
     public synchronized void saveConfig(String name) throws IOException {
         // Screen.removed() can request another save after shutdown disables models.
         if (stopping) {
@@ -83,6 +103,7 @@ public final class ConfigManager {
         currentConfig = target.getName();
         snapshot = next;
         ready = true;
+        loadFailed = false;
     }
 
     public synchronized void loadConfig() throws IOException {
@@ -128,8 +149,11 @@ public final class ConfigManager {
                 states.add(new PendingState(model, binding, parsedKey, enabled, mode, binding.serialize(), model.isEnabled(), binding.getMode()));
                 if (data.has("settings")) {
                     JsonObject values = data.getAsJsonObject("settings");
-                    for (Setting<?> setting : model.getSettings()) if (values.has(setting.getId()))
-                        settings.add(new PendingSetting(setting, setting.decode(values.get(setting.getId())), setting.snapshot()));
+                    for (Setting<?> setting : model.getSettings()) {
+                        if (!values.has(setting.getId())) continue;
+                        Setting.State next = setting.decodeOrKeep(values.get(setting.getId()), model.getId());
+                        if (next != null) settings.add(new PendingSetting(setting, next, setting.snapshot()));
+                    }
                 }
             }
         } catch (RuntimeException exception) {
@@ -167,6 +191,7 @@ public final class ConfigManager {
         snapshot = root.deepCopy();
         currentConfig = target.getName();
         ready = true;
+        loadFailed = false;
         // Keep the startup profile in sync without overwriting the selected profile.
         if (!currentConfig.equals("latest")) {
             new Config(directory, "latest").save(capture());
@@ -203,7 +228,7 @@ public final class ConfigManager {
         ticks = 0;
         if (!capture().equals(snapshot)) {
             try {
-                saveConfig();
+                saveIfLoaded();
             } catch (IOException exception) {
                 Myth.LOGGER.error("Could not autosave Myth config", exception);
             }

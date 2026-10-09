@@ -20,7 +20,7 @@ src/
 │       ├── combat/      # KillAura
 │       ├── misc/
 │       ├── player/      # Sprint、Scaffold
-│       ├── render/      # FullBright
+│       ├── render/      # FullBright、NoRender
 │       └── client/
 └── resources/
     ├── fabric.mod.json
@@ -44,9 +44,9 @@ DevAuth 1.2.2 使用 `localRuntime` 加载，仅用于开发运行，不打入�
 ## 基础框架
 
 `Myth.MODEL_MANAGER` 管理功能的注册、分类查询、启停、按键切换和客户端 tick。
-当前注册 KillAura / AutoCrystal（Combat）、FakePlayer（Misc）、Sprint / Scaffold（Player）、FullBright（Render）和 Notifications（Client），均默认未绑定。
+当前注册 KillAura / Velocity（Combat）、FakePlayer（Misc）、Sprint / Scaffold / InvManager / ChestStealer（Player）、FullBright / Animations / Shader / TimeChanger / NoRender（Render）和 Notifications（Client），均默认未绑定。
 原版选项页面的 FOV 滑条沿用 Mio 的上限 150（原版为 110），最小值 30、默认值 70；数值保存在原版 `options.txt`。
-KillAura、Sprint、Scaffold 和 FullBright 默认关闭；Notifications 默认开启，代码位于 `command/Notifications.java`。
+KillAura、Sprint、Scaffold、FullBright 和 NoRender 默认关闭；Notifications 默认开启，代码位于 `command/Notifications.java`。
 KillAura 的 CPS Mode → 1.9+ 接入 Nova 等待暴击：开启 Wait Critical，右键展开 Interrupt Sprint 和 Critical Sound；三个选项默认关闭。
 Notifications 的 Modules 控制聊天栏开关通知：开启显示绿色 `[+] Module`，关闭显示红色 `[-] Module`，
 括号沿用 Mio 的较深颜色。GUI、按键和 toggle 命令共用通知入口；重复设置相同状态不会重复通知，
@@ -54,21 +54,58 @@ Notifications 的 Modules 控制聊天栏开关通知：开启显示绿色 `[+] 
 Sprint 沿用 Starain 的 PRE Motion 最高优先级监听：持续按住原版冲刺键并关闭 ToggleSprint，关闭模块时释放冲刺键。
 Scaffold 沿用 Starain 的 Normal / Snap / Telly、SafeWalk、Rise / Heypixel 转头和 Normal / Strict 射线判断，自动选择热栏方块，关闭时恢复槽位；按要求不包含 ESP、卡空跳帧和秒放方块自救。
 源码适配和验证见 [Scaffold 移植记录](docs/starain-scaffold-port.md)。Scaffold 开启时暂停 KillAura。
+InvManager 和 ChestStealer 移植自 Starain 的同名模块，共用 `utils/inventory/InventoryUtils`。
+InvManager 在 `MotionEvent.PRE` 把最好的剑/方块/镐/斧/弓/末影珍珠/水桶/火球/蛋雪球换到指定热栏位，
+按 Offhand Items 维持副手，Auto Armor 换装，Throw Items 丢掉不要的东西；
+每个动作共用一个随机延迟，所以一个 tick 只点一次。ChestStealer 只认箱子/大箱子（可选末影箱），
+每次搬一格最该拿的，搬空后按 Close Delay 关闭。
+26.2 删掉了 `SwordItem` / `ArmorItem` / `ArmorMaterials` 这些类，所以分类改走 `ItemTags` 与
+`Equippable` 组件，护甲和武器评分按属性修饰符重新推导，差异见
+[InvManager 与 ChestStealer 移植记录](docs/starain-inventory-port.md)。
 FakePlayer 沿用 Mio `.fakeplayer` 的客户端副本：开启在本地玩家位置生成一个复制背包的假人，
 弹图腾不死、每 80 tick 补药水与 16 点吸收、副手常驻图腾；Name 改名即重新生成，
 Record / Play 录制并循环回放自己的移动。打它会在本地结算伤害，攻击包不会发给服务器。
 源码适配和未移植项见 [FakePlayer 移植记录](docs/mio-fakeplayer-port.md)。
-AutoCrystal 沿用 Mio 的爆炸伤害模型（`utils/CrystalDamage.java`）选放置点和要打的水晶，
-先破后放，Place / Break 两组分别有延迟、通透与隔墙距离、伤害下限和自伤上限；
-AntiSuicide、FacePlace、AutoSwap / SwapBack 沿用 Mio 行为。Mio 反编译源码里爆炸暴露率
-是整数除法导致恒不放置，本移植改用原版 `ServerExplosion.getSeenPercent`。
-BasePlace 会把「能垫黑曜石的位置」一并计分，选中后先垫底座，下一次再放水晶，
-StrictDirection / Air 沿用 Mio 的可见面与 airplace 判定。
-Render 用 ImGui 画渐隐盒子（`UI/WorldEsp.java`，投影取当帧相机矩阵），只在放置时高亮。
-静默换手等未移植项见 [AutoCrystal 移植记录](docs/mio-autocrystal-port.md)。
+Velocity 移植自 `skid/OpenOnxy-main` 的 `module/combat/VelocityModule`（1.8.9 的混淆反编译）。
+只有 Lag 一种模式：挨打之后把自身的动量包压住，连它后面的包一起入队取消，
+压够 Delay ticks 或落地、入水、减伤成功就按顺序重放；Keep Alive 和登录/重生包不压。
+Reduce knockback 在击退落地后开一个 Reduce window，窗口内若准星 3 格内有人且正在疾跑，
+就发裸 `ServerboundAttackPacket` 反打一次，水平动量 ×0.6 并取消疾跑。
+Targets / FOV 限定目标，Chance 控制触发概率，Pause while backpedaling 和 Only while moving
+按移动输入设闸。混淆名的语义考据、26.2 包名对照和重放的线程处理见
+[Velocity 移植记录](docs/openonyx-velocity-port.md)。
+Animations 移植自 `skid/Starain-1.21.11-master` 的 `module/impl/render/Animations`，**纯视觉、不发任何包**：
+右键持剑时原版本来就会发 use 包，ViaVersion 把它翻译成 1.8 的格挡，服务端那半不用管；
+缺的只是姿势，因为 26.2 的剑没有 BLOCK 使用动画。
+Block Mode 有 Vanilla / Smooth / 1.7 / Push / Swing / Swang / Swong / Swaing / Punch / Sile / None 十一档，
+另有 Position X/Y/Z、Swing Speed、Custom Equipped Progress 和 Hide Offhand。
+由 `MixinItemInHandRenderer` 接管 26.2 改名后的 `submitArmWithItem`（源项目是 `renderArmWithItem`）。
+Swing Speed 源项目靠反射 `LivingEntity.swingDuration`，26.2 没有这个字段（时长改由
+`getCurrentSwingDuration()` 从物品的挥手动画算），所以改成在 `MixinLivingEntity` 里缩放那个返回值。
 FullBright 保留 Gamma/NightVision 模式，Gamma 的 Brightness 为 1～15、默认 15，每个玩家 tick 增加 0.1。
 26.2 通过 `LightmapRenderStateExtractor` 替换光照的 Gamma 读取，不修改游戏保存的亮度选项；关闭后恢复原版光照。
 NightVision 每 tick 添加 1337 tick 的客户端夜视，切回 Gamma 或关闭模块时移除，与 Starain 一致。
+Shader 移植自 Mio 的 `module/render/Shader`，是把 ESP 画成**后处理**而不是光影：
+先拿到一张只有目标实体的白色剪影，再用 Solid / Rainbow / Gradient / Bloom 四个片元着色器
+把它变成填充 + 描边，另有 Dots / Grid 装饰层。
+**取剪影的方式整个换了**：Mio 自己换 `worldRenderer` 的 framebuffer 重渲染实体，
+26.2 的帧图下这条路不存在；改成给目标实体置 `EntityRenderState.outlineColor`，
+由原版渲染进它自己的 `entityOutlineTarget`，再屏蔽掉原版的描边后处理链。
+GL pass 在 `LevelRenderer.render` 的 TAIL 直接混合到主画面（不经 ImGui），和 Mio 一致。
+设置默认值取自 Mio 的 `nick/SettingValues` 表；Image / Hands / NoCluster 淡出未移植，
+原因见 [Shader 移植记录](docs/mio-shader-port.md)。
+TimeChanger 移植自 Starain 的同名模块：World Time（0～24000，默认 8000）把世界时间钉住，
+并取消 `ClientboundSetTimePacket` 以免服务端定期回正导致闪烁，纯客户端。
+**26.2 已经没有 `Level.setDayTime`**——时间换成了 `WorldClock` 注册表 + `ClockManager`，
+维度的 timeline 取 `clockManager.getTotalTicks(clock)`，天空颜色、光照等级和日月位置都由它派生，
+所以改的是 `ClientClockManager.handleUpdates` 里那个 clock 的 tick 数。
+NoRender 沿用 Mio 的 46 个开关，分 Self / UI / World / Entities 四个折叠分区（这四个在 Mio 里也只是分区，本身无行为）；
+名称、默认值、范围、单位和父子可见性全部取自 Mio 的 `nick/Setting*` 表，`isDrawn()` 为 false 所以不进 ModuleList。
+26.2 把渲染拆成状态提取与提交，实体和方块实体的剔除因此落在提取阶段
+（`LevelExtractor.isEntityVisible`、`BlockEntityRenderDispatcher.tryExtractRenderState`）。
+Hands / Armor 的 Opacity 只有 0 与非 0 两种效果：26.2 的提交式管线没有全局 shader color，
+而 Mio 默认值就是 0，所以开箱行为一致。NoCluster 与 IgnoreESP 未移植，
+原因和完整落点见 [NoRender 移植记录](docs/mio-norender-port.md)。
 
 后续功能继承 `Model`，指定唯一 ID、名称、分类和可选默认按键，然后在
 `Myth.onInitializeClient()` 中调用 `MODEL_MANAGER.register(...)`。默认按键为空，

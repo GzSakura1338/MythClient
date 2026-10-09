@@ -96,6 +96,7 @@ public final class ClickGui {
     private Panel owner;
     private ImDrawList draw;
     private float mx, my, screenWidth, screenHeight, opacity = 1, delta;
+    private float laidOutWidth, laidOutHeight;
     private float clipTop, clipBottom;
     private boolean searchFocused;
     private String search = "", suggestion = "";
@@ -153,6 +154,21 @@ public final class ClickGui {
         return switch (category) {
             case COMBAT -> 0; case MISC -> 1; case RENDER -> 2; case PLAYER -> 3; case CLIENT -> 4;
         };
+    }
+    /** Scrolling deliberately parks panels off-screen, so only a viewport change pulls them back:
+     *  a panel dragged to the far side of a large window is otherwise lost when the window shrinks. */
+    private void reclampPanels() {
+        if (screenWidth == laidOutWidth && screenHeight == laidOutHeight) return;
+        laidOutWidth = screenWidth; laidOutHeight = screenHeight;
+        float maxX = Math.max(0, screenWidth - options.width()), maxY = Math.max(0, screenHeight - 14);
+        for (Panel panel : panels) {
+            panel.x = Math.clamp(panel.x, 0, maxX);
+            // A panel taller than the viewport keeps its scrolled offset, but not past its own bottom.
+            panel.y = Math.clamp(panel.y, Math.min(0, screenHeight - panel.height), maxY);
+        }
+        for (SoundPanel panel : soundPanels) {
+            panel.x = Math.clamp(panel.x, 0, maxX); panel.y = Math.clamp(panel.y, Math.min(0, maxY), maxY);
+        }
     }
     private void alignPanels() {
         if (options.position.get().equals("Custom")) return;
@@ -226,7 +242,7 @@ public final class ClickGui {
         refreshModels(); fonts.prepare();
         var io = ImGui.getIO(); delta = io.getDeltaTime();
         screenWidth = io.getDisplaySizeX(); screenHeight = io.getDisplaySizeY();
-        alignPanels();
+        reclampPanels(); alignPanels();
         mx = io.getMousePosX(); my = io.getMousePosY(); opacity = manager.opacity();
         draw = ImGui.getBackgroundDrawList();
         renderSnow();
