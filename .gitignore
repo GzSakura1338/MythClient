@@ -12,3 +12,7 @@ docs/
 # Stray local directories.
 My/
 logs/
+
+# JVM crash dumps
+hs_err_pid*.log
+replay_pid*.log

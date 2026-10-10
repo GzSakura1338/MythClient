@@ -22,6 +22,19 @@ loom {
         client {
             property 'devauth.enabled', 'true'
             property 'devauth.account', 'main'
+            // This machine's Windows commit limit (physical + a page file pinned at 16G) is the
+            // binding constraint, not physical memory - crashes read "Native memory allocation
+            // (malloc) failed" with free commit at 3M while 2.9G of RAM sat unused. Every flag here
+            // shrinks what the JVM asks the OS to commit.
+            //
+            // The heap would otherwise be sized at a quarter of physical memory; 2G is more than
+            // the client uses. CICompilerCount is the big one: left to itself the JVM scaled it to
+            // 15 off the CPU count, and every crash log died in a C2 CompilerThread allocating a
+            // ~14M Chunk, so fifteen arenas were competing for the native memory that had run out.
+            // Four keeps tiered warmup healthy. The code cache peaked at 42M of its 240M
+            // reservation, and metaspace defaults to unlimited.
+            vmArgs '-Xmx2G', '-XX:CICompilerCount=4', '-XX:ReservedCodeCacheSize=192m',
+                    '-XX:MaxMetaspaceSize=512m'
         }
     }
 }

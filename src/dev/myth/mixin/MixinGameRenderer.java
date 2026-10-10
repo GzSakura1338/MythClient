@@ -51,6 +51,8 @@ public abstract class MixinGameRenderer {
      * and lets submitHandsWithItems apply the sway once, exactly as it did for vanilla.
      */
     @Unique private final Matrix4f myth$handPose = new Matrix4f();
+    /** Reused the way vanilla reuses handAndScreenSubmitNodeStorage; prepareFrame drains it. */
+    @Unique private final SubmitNodeStorage myth$handStorage = new SubmitNodeStorage();
     @Unique private boolean myth$handPoseReady;
 
     @Inject(method = "renderItemInHand", at = @At(value = "INVOKE",
@@ -96,12 +98,11 @@ public abstract class MixinGameRenderer {
         try {
             // The silhouette keeps the item's own colours; only its alpha is read, and the shaders
             // replace the colour outright, so there is no need to flatten it to white first.
-            SubmitNodeStorage storage = new SubmitNodeStorage();
             PoseStack pose = new PoseStack();
             pose.mulPose(myth$handPose);
-            client.gameRenderer.itemInHandRenderer.submitHandsWithItems(deltaPartialTick, pose, storage,
+            client.gameRenderer.itemInHandRenderer.submitHandsWithItems(deltaPartialTick, pose, myth$handStorage,
                     client.player, client.getEntityRenderDispatcher().getPackedLightCoords(client.player, deltaPartialTick));
-            client.gameRenderer.featureRenderDispatcher().renderAllFeatures(storage);
+            client.gameRenderer.featureRenderDispatcher().renderAllFeatures(myth$handStorage);
         } finally {
             RenderSystem.outputColorTextureOverride = color;
             RenderSystem.outputDepthTextureOverride = depth;

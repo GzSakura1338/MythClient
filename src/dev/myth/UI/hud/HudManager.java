@@ -68,7 +68,6 @@ public final class HudManager {
         register(new dev.myth.UI.hud.Map());
         register(new Music());
         register(new TextRadar());
-        register(new TargetHud());
         Myth.EVENT_MANAGER.register(data);
         Myth.EVENT_MANAGER.register(this); initialized = true;
     }
